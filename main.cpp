@@ -221,6 +221,27 @@ void Competitor::print(){
         }
     }
     cout<<'\n';
+    cout<<"Timpul mediu pentru fiecare proba:\n";
+    for(int i=0; i<17; i++){
+        if(hasResultInEvent[i]==true){
+            String tmp=eventNameFromEnum(i);
+            cout<<tmp<<": ";
+            float temp=averageResult[i];
+            if(temp<60){
+                cout<<temp<<' ';
+            } else {
+                int mins=floor(temp/60);
+                double seconds=temp-mins*60;
+                cout<<mins<<':';
+                if(seconds<10){
+                    cout<<'0';
+                }
+                cout<<round(seconds*100)/100.0<<' ';
+            }
+            cout<<'\n';
+        }
+    }
+    cout<<"#################################\n\n";
 }
 void Competitor::addResultData(Events event, double _times[], int length, int _rank, SingleRecordTypes recordSg, AverageRecordTypes recordAvg, int _comp_id){
     //functia va adauga in results un nou rezultat cu datele transmise prin argumentele functiei
@@ -256,6 +277,24 @@ void Competitor::findBestResults(){
                 }
             }
         }
+    }
+}
+
+void Competitor::calculateAverageResult(){ //calculeaza rezultatul mediu al concurentului pentru fiecare proba
+    for(int i=0; i<17; i++){ //pentru toate cele 17 probe
+        int numOfTimes=0;
+        double sum=0;
+        for(int j=0; j<results_len; j++){
+            if(results[j].getEvent()==i){
+                double *temp=results[j].getTimes();
+                int len=results[j].getTimesLen();
+                for(int k=0; k<len; k++){
+                    sum+=temp[k];
+                    numOfTimes++;
+                }
+            }
+        }
+        averageResult[i]=sum/numOfTimes;
     }
 }
 
@@ -502,6 +541,13 @@ Events Result::getEvent(){
     return this->event;
 }
 
+double* Result::getTimes(){
+    return this->times;
+}
+
+int Result::getTimesLen(){
+    return this->times_len;
+}
 
 
 int main()
@@ -537,6 +583,7 @@ int main()
 
     competitors[0].calculateRecords();
     competitors[0].findBestResults();
+    competitors[0].calculateAverageResult();
     competitors[0].print();
 
     //Max Park
@@ -560,6 +607,7 @@ int main()
 
     competitors[1].calculateRecords();
     competitors[1].findBestResults();
+    competitors[1].calculateAverageResult();
     competitors[1].print();
 
 
@@ -668,6 +716,8 @@ int main()
                     cin>>compId;
                     competitors[numberOfCompetitors-1].addResultData(proba,times,times_len,__rank,sgRecord,avgRecord,compId);
                     competitors[numberOfCompetitors-1].findBestResults();
+                    competitors[numberOfCompetitors-1].calculateAverageResult();
+
                     cout<<"Apasati 2 pentru a afisa acest concurent in urma actualizarii\n";
                     cin>>userInput;
                     if(userInput==2){
@@ -758,6 +808,8 @@ int main()
                 cin>>compId;
                 competitors[indexCompetitor].addResultData(proba,times,times_len,__rank,sgRecord,avgRecord,compId);
                 competitors[indexCompetitor].findBestResults();
+                competitors[indexCompetitor].calculateAverageResult();
+
                 cout<<"Apasati 2 pentru a afisa acest concurent in urma actualizarii, sau 3 pentru a afisa single-ul si average-ul acestui rezultat ";
                 cin>>userInput;
                 if(userInput==2){
@@ -824,5 +876,6 @@ int main()
             }
         }
     }
+    delete[] compList;
     return 0;
 }

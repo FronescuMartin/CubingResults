@@ -75,6 +75,8 @@ public:
     AverageRecordTypes getAverageRecord();
     Events getEvent();
     double roundTo2DecimalPlaces(double num);
+    double* getTimes();
+    int getTimesLen();
 };
 
 class Competitor{
@@ -83,9 +85,9 @@ private:
     int id, numberOfNRs, numberOfCRs, numberOfWRs, age;
     int results_len;
     Result* results;
-    int indexCrt=0;
     Result* bestResultsSingle[17];
     Result* bestResultsAverage[17];
+    double averageResult[17];
     bool hasResultInEvent[17];
 
 public:
@@ -99,6 +101,7 @@ public:
     void calculateRecords();
     int getNumberOfRecords();
     void findBestResults();
+    void calculateAverageResult();
     void print();
     Result* getResults();
     int getResultsLen();
