@@ -1,23 +1,27 @@
 #include <iostream>
 #include <cstring>
 #include <cmath>
+#include <iomanip>
 #include "cubing.h"
 using namespace std;
 
 Competition *compList=new Competition[100];
 int numberOfComps=0;
+//vector declarat global deoarece orice obiect Competitor trebuie sa aiba acces la lista de competitii,
+//deoarece fiecare competitor are in vectorul de rezultate un pointer catre competitia la care
+//s-a obtinut acel rezultat
 
 
-String::String(){
+String::String(){ //constructorul fara parametru pentru string, initializeaza doar caracterul nul
     str=new char[1];
     str[0]='\0';
 }
-String::String(char* input){
+String::String(char* input){ //constructor cu parametru pointer la sir de caractere
     str=new char[strlen(input)+1];
     strcpy(str, input);
     str[strlen(input)]='\0';
 }
-String::String(const String &s){
+String::String(const String &s){ //constructor de copiere
     str=new char[strlen(s.str)+1];
     strcpy(str, s.str);
     //str[strlen(s.str)]='\0';
@@ -30,7 +34,7 @@ String& String::operator =(String &&s){ //operator= de mutare
     str=s.str;
     s.str=nullptr;
 }
-String& String::operator =(const String &s){
+String& String::operator =(const String &s){ //operator= de copiere
     delete[] str;
     str=new char[strlen(s.str)+1];
     strcpy(str, s.str);
@@ -38,29 +42,27 @@ String& String::operator =(const String &s){
     return *this;
 }
 
-char* String::findStr(const char ch[]){
+char* String::findStr(const char ch[]){ //implementare pentru strstr in clasa String
     char *p=strstr(this->str, ch);
     return p;
 }
 
 
-String::~String(){
+String::~String(){ //destructor
     delete[] str;
 }
-String String::operator + (const String &s2){
-    //cout<<(strlen(s2.str));
+String String::operator + (const String &s2){ //operatorul + supraincarcat, se aloca un nou spatiu de memorie,
+    // in care se copiaza continutul vechi, + continutul de la al doilea argument
     char *tmp_str=new char[strlen(str)+strlen(s2.str)+1];
     strncpy(tmp_str, str, strlen(str));
     strncpy(tmp_str+strlen(str), s2.str, strlen(s2.str));
     strcpy(tmp_str+(strlen(str)+strlen(s2.str)),"\0");
     String tmp(tmp_str);
-    delete[] tmp_str;
-    //cout<<tmp_str<<'\n';
+    delete[] tmp_str; //trebuie dealocat spatiu la care pointa initial tmp_str, pentru a nu duce la memory leak
     return tmp;
 }
 
-String String::operator + (char ch){
-    //cout<<(strlen(s2.str));
+String String::operator + (char ch){ //operatorul+ supraincarcat pentru concatenarea cu un singur caracter
     char chv[2];
     chv[0]=ch;
     char *tmp_str=new char[strlen(str)+2];
@@ -68,16 +70,17 @@ String String::operator + (char ch){
     strcpy(tmp_str+strlen(str), chv);
     strcpy(tmp_str+(strlen(str)+1),"\0");
     String tmp(tmp_str);
-    delete[] tmp_str;
-    //cout<<tmp_str<<'\n';
+    delete[] tmp_str; //trebuie dealocat spatiu la care pointa initial tmp_str, pentru a nu duce la memory leak
     return tmp;
 }
-ostream& operator <<(ostream &out, String &s){
+ostream& operator <<(ostream &out, String &s){ //operatorul << supraincarcat pentru cout
     out<<s.str;
     return out;
 }
 
-Competitor::Competitor(){
+//########## COMPETITOR ###########
+
+Competitor::Competitor(){ //constructorul fara parametru, seteaza valori default
     this->results=nullptr;
     this->name=String("");
     this->country=String("");
@@ -89,9 +92,7 @@ Competitor::Competitor(){
         hasResultInEvent[i]=false; //initializarea vectorului care spune daca concurentul are vreun rezultat in proba respectiva
     }
 }
-//##########COMPETITOR###########
-Competitor::Competitor(String name, String country, int age){
-    //results=new Result*[results_len];
+Competitor::Competitor(String name, String country, int age){ //constructor cu parametri
     this->results=nullptr;
     this->name=name;
     this->country=country;
@@ -105,7 +106,7 @@ Competitor::Competitor(String name, String country, int age){
     }
 }
 
-Competitor::~Competitor(){
+Competitor::~Competitor(){ //destructor
     if(results!=nullptr){
         delete[] results;
     }
@@ -119,6 +120,9 @@ void Competitor::setAge(int newAge){
 
 
 void Competitor::calculateRecords(){
+    //calculeaza numarul de recorduri (NR=national record, CR=continental record, WR=world record)
+    //parcurgand vectorul de rezultate din cadrul unui competitor, si numarand fiecare aparitie a unui enum
+    //de tip record, fie el la average, fie la single.
     numberOfNRs=0;
     numberOfCRs=0;
     numberOfWRs=0;
@@ -147,12 +151,10 @@ void Competitor::calculateRecords(){
 
 }
 int Competitor::getNumberOfRecords(){
-    //cout<<numberOfNRs<<' '<<numberOfCRs<<' '<<numberOfWRs<<'\n';
     return numberOfNRs+numberOfCRs+numberOfWRs;
 }
 
 String Competitor::eventNameFromEnum(int e){ //functia primeste un enum de fapt, dar valoarea e transmisa ca intreg
-    // Square_1, MultiBLD, _4BLD, _5BLD, Skewb, FewestMovesChallenge, Clock,
     if(e==0) return String("2x2");
     if(e==1) return String("3x3");
     if(e==2) return String("4x4");
@@ -182,36 +184,68 @@ void Competitor::print(){
         results[i].print();
     }
     cout<<"Cele mai bune rezultate obtinute: "<<'\n';
+    //hasResultInEvent contine true doar daca concurentul are un rezultat in proba respectiva, il folosim
+    //pentru a nu intra in elemente din vector nealocate, neexistand valori
+
     for(int i=0; i<17; i++){
         if(hasResultInEvent[i]==true){
             String tmp=eventNameFromEnum(i);
             cout<<tmp<<' ';
             cout<<"Single: ";
-            cout<<bestResultsSingle[i]->getSingle();
+            float temp=bestResultsSingle[i]->getSingle();
+            if(temp<60){
+                cout<<temp<<' ';
+            } else {
+                int mins=floor(temp/60);
+                double seconds=temp-mins*60;
+                cout<<mins<<':';
+                if(seconds<10){
+                    cout<<'0';
+                }
+                cout<<round(seconds*100)/100.0<<' ';
+            }
             cout<<" Average: ";
-            cout<<bestResultsAverage[i]->getAverage();
+            temp=bestResultsAverage[i]->getAverage();
+            if(temp<60){
+                cout<<fixed<<setprecision(2)<<temp<<' ';
+            } else {
+                int mins=floor(temp/60);
+                double seconds=temp-mins*60;
+                cout<<mins<<':';
+                if(seconds<10){
+                    cout<<'0';
+                }
+                cout<<fixed<<setprecision(2)<<round(seconds*100)/100.0<<' ';
+            }
+            cout<<'\n';
         }
     }
     cout<<'\n';
 }
 void Competitor::addResultData(Events event, double _times[], int length, int _rank, SingleRecordTypes recordSg, AverageRecordTypes recordAvg, int _comp_id){
+    //functia va adauga in results un nou rezultat cu datele transmise prin argumentele functiei
+    //results este alocat dinamic, deci trebuie sa se aloce o noua zona de memorie pentru a stoca atat datele
+    //deja existente cat si noul obiect rezultat.
     Result _result(event, _times, length, _rank, recordSg, recordAvg, _comp_id);
     Result* result2=new Result[results_len+1];
     for(int i=0; i<results_len; i++){
         result2[i]=results[i];
     }
     result2[results_len]=_result;
+    //results deja pointa catre o zona de memorie, care acum nu mai este folosita, asa ca trebuie dealocata
+    //pentru a evita memory leak
     delete[] results;
     results=result2;
     results_len++;
 }
 
 void Competitor::findBestResults(){
-    for(int i=0; i<17; i++){ //Verifica pentru toate cele 17 probe cele mai bune rezultate
+    for(int i=0; i<17; i++){ //Verifica pentru toate cele 17 probe cele mai bune rezultate (i va fi proba respectiva, chiar daca aceasta este enum in mod normal, valoarea implicita a ei este intreg.
         double bestSingle=-1, bestAverage=-1;
         for(int j=0; j<results_len; j++){
             if(results[j].getEvent()==i){
                 hasResultInEvent[i]=true;
+                //e important sa stim daca exista rezultat pentru proba respectiva pentru a nu accesa memorie nealocata
                 if(results[j].getSingle()<bestSingle || bestSingle==-1){
                     bestResultsSingle[i]=&results[j];
                     bestSingle=results[j].getSingle();
@@ -220,57 +254,88 @@ void Competitor::findBestResults(){
                     bestResultsAverage[i]=&results[j];
                     bestAverage=results[j].getAverage();
                 }
-
             }
         }
     }
 }
 
+//getteri deoarece datele membre sunt private
+Result* Competitor::getResults(){
+    return results;
+}
+int Competitor::getResultsLen(){
+    return results_len;
+}
+
 //###########DATE############
-Date::Date(int _day, Month _month, int _year){
+Date::Date(int _day, Month _month, int _year){ //constructor cu parametri
     this->day=_day;
     this->month=_month;
     this->year=_year;
 }
 
+Date::Date(){ //constructor fara parametri, seteaza valori implicite
+    this->day=0;
+    this->month=0;
+    this->year=0;
+}
 
-
-Date::Date(int _day, int _month, int _year){
+Date::Date(int _day, int _month, int _year){ //constructor echivalent, dar care primeste int in loc de enum pentru luna, in caz ca e nevoie
+    this->day=_day;
+    this->month=_month;
+    this->year=_year;
+}
+void Date::init(int _day, int _month, int _year){ //initializeaza datele in caz ca e nevoie sa se apeleze constructorul gol,
+    //deoarece inca nu sunt cunoscute datale initiale
     this->day=_day;
     this->month=_month;
     this->year=_year;
 }
 
-ostream& operator << (ostream &out, Date &d){
+ostream& operator << (ostream &out, Date &d){ //operatorul << supraincarcat, pentru cout
     if(d.day<10){
-        out<<'0';
+        out<<'0'; //pentru formatare
     }
     out<<d.day<<'.';
     if(d.month<10){
-        out<<'0';
+        out<<'0'; //pentru formatare
     }
     out<<d.month<<'.';
     out<<d.year;
     return out;
 
 }
-//###########COMPETITION#########
-Competition::Competition(String &&_name, int _numberOfCompetitors, int _id){
+//###########COMPETITION############
+Competition::Competition(String _name, int _numberOfCompetitors, int _id, int _day, int _month, int _year){
+    //constructor cu parametri
     this->name=_name;
-    this->numberOfCompetititors=_numberOfCompetitors;
+    this->numberOfCompetitors=_numberOfCompetitors;
     this->id=_id;
+    date.init(_day, _month, _year);
 }
 Competition::Competition(){
+    //constructor fara parametri, seteaza valorile implicite
     this->name="";
-    this->numberOfCompetititors=-1;
+    this->numberOfCompetitors=-1;
     this->id=-1;
 }
 
 void Competition::init(String _name, int _numberOfCompetitors, int _id){
+    //este apelat init in cazul in care se face un vector de obiecte, si atunci initial nu se pot transmite parametrii
     this->name=_name;
-    this->numberOfCompetititors=_numberOfCompetitors;
+    this->numberOfCompetitors=_numberOfCompetitors;
     this->id=_id;
 }
+
+void Competition::init(String _name, int _numberOfCompetitors, int _id, int _day, int _month, int _year){
+    //la fel ca mai sus, dar in cazul in care se transmite si data competitiei
+    this->name=_name;
+    this->numberOfCompetitors=_numberOfCompetitors;
+    this->id=_id;
+    date.init(_day, _month, _year);
+}
+
+//getteri pentru datele membre private
 int Competition::getId(){
     return this->id;
 }
@@ -279,11 +344,34 @@ String Competition::getName(){
 }
 
 void Competition::print(){
+    //printul acesta e apelat in cadrul unui rezultat, pentru a mentiona la ce competitie este obtinut
     cout<<this->name;
 }
 
-//###########RESULT############
+void Competition::printDetailed(){
+    //printul acesta e apelat in cadrul meniului interactiv, la adaugarea unui obiect de timp Competition
+    cout<<"Nume: "<<this->name<<'\n';
+    cout<<"Numar concurenti: "<<numberOfCompetitors<<'\n';
+    cout<<"Data: ";
+    cout<<date<<'\n';
+}
+
+//setteri pentru datele membre private
+//sunt folositi in cadrul meniului interactiv
+void Competition::setName(String newName){
+    this->name=newName;
+}
+
+void Competition::setNumberOfCompetitors(int n){
+    this->numberOfCompetitors=n;
+}
+void Competition::setDifferentId(int n){
+    this->id=n;
+}
+
+//########### RESULT ############
 Result::Result(Events event, double _times[], int length, int _rank, SingleRecordTypes recordSg, AverageRecordTypes recorAvg, int _comp_id){
+    //constructorul cu parametri
     this->event=event;
     this->times_len=length;
     this->rankInRound=_rank;
@@ -301,11 +389,11 @@ Result::Result(Events event, double _times[], int length, int _rank, SingleRecor
     }
     //this->record=record;
 }
-Result::Result(){
+Result::Result(){ //constructorul fara parametri
     times_len=0;
 }
 
-Result::Result(const Result &r){
+Result::Result(const Result &r){ //constructorul de copiere
     event=r.event;
     //times=r.times;
     times_len=r.times_len;
@@ -320,7 +408,7 @@ Result::Result(const Result &r){
     rankInRound=r.rankInRound;
 }
 
-Result Result::operator=(const Result& r){
+Result Result::operator=(const Result& r){ //operatorul=de copiere supraincarcat
     event=r.event;
     //times=r.times;
     times_len=r.times_len;
@@ -339,9 +427,24 @@ Result Result::operator=(const Result& r){
 
 
 void Result::print(){
+    //afiseaza timpii din cadrul obiectului Result
+    //realizeaza formatare pentru a afisa corect timpii de peste 1 minut
+    //scriind timpii in minute:secunde.sutimi in loc de secunde.sutimi
+    //de asemenea afiseaza toti timpii cu 2 zecimale, chiar si in cazul timpilor de forma 2.00 pentru a nu arata 2
     for(int i=0; i<times_len; i++){
-        cout<<times[i]<<' ';
+        if(times[i]<60){
+            cout<<fixed<<setprecision(2)<<times[i]<<' ';
+        } else {
+            int mins=floor(times[i]/60);
+            double seconds=times[i]-mins*60;
+            cout<<mins<<':';
+            if(seconds<10){
+                cout<<'0';
+            }
+            cout<<fixed<<setprecision(2)<<round(seconds*100)/100.0<<' ';
+        }
     }
+
     cout<<'\n';
     cout<<"Competition: ";
     String tmp=competition->getName();
@@ -349,6 +452,7 @@ void Result::print(){
 }
 double Result::roundTo2DecimalPlaces(double num){
     return round(num * 100) / 100.0;
+    //aproximeaza rezultatele la 2 zecimale, folosit pentru calcularea mediei
 }
 
 SingleRecordTypes Result::getSingleRecord(){
@@ -367,6 +471,9 @@ void Result::getCompetitionFromCompetitionId(){
 }
 
 void Result::calculateAverageAndSingle(){
+    //single reprezinta cel mai bun rezultat din cele 3 sau 5 din cadrul rezultatului
+    //average reprezinta media celor 3 timpi mijlocii in cazul probelor cu 5 timpi
+    //sau media celor 3 timpi in cazul probelor cu 3 timpi
     double best=times[0], worst=times[0], sum=times[0];
     for(int i=1; i<times_len; i++){
         if(times[i]<best){
@@ -377,11 +484,13 @@ void Result::calculateAverageAndSingle(){
         sum+=times[i];
     }
     if(times_len==5){
-        sum=sum-best-worst;
+        sum=sum-best-worst; //in cazul probelor cu 5 rezultate, se scade timpul cel mai rapid cat si cel mai lent
     }
-    average=roundTo2DecimalPlaces(sum/3);
+    average=roundTo2DecimalPlaces(sum/3); //aproximarea deoarece in baza de date totul este stocat cu 2 zecimale
     single=best;
 }
+
+//getteri pentru datele membru
 double Result::getAverage(){
     return this->average;
 }
@@ -398,31 +507,63 @@ Events Result::getEvent(){
 int main()
 {
     int numberOfCompetitors=0;
-    double temp[5]={1.23,1.24,1.09,1.93,2.21};
-    Result r(_2x2,temp, 5, 2);
-    //cout<<r.getAverage()<<'\n';
-    Date d(23, February, 2013);
-    //cout<<d;
-    //String s1("Feliks Zemdegs");
-    //String s2("Australia");
-    Competitor c1(String("Feliks Zemdegs"), String("Australia"), 23);
     Competitor competitors[1000];
+
+    //date pentru testarea claselor implementate
+    //Feliks Zemdegs
+    Competitor c1(String("Feliks Zemdegs"), String("Australia"), 27);
     competitors[0]=c1;
     numberOfCompetitors++;
-    double tempTimes[5]={1.23,1.24, 1.25, 2.43, 4.53};
-    double tempTimes2[5]={2.23,3.24, 1.25, 7.43, 4.53};
-    double tempTimes3[5]={6.23,5.24, 1.25, 2.43, 4.53};
-    double tempTimes4[5]={1.23,2.24, 1.25, 1.03, 0.93};
-    //Competition *comp1=new Competition("Test Cubing Open 2013", 56, 1);
-    compList[0].init("Test Cubing Open 2013", 56,0);
-    compList[1].init("Word Cubing Open 2013", 202,1);
-    numberOfComps+=2;
-    //sa se aloce inauntru!!!
-    competitors[0].addResultData(_2x2, tempTimes,5,4,No_Single_Record, WR_Average, 1);
-    competitors[0].addResultData(_2x2, tempTimes2,5,4,WR_Single, No_Average_Record, 2);
+
+    double Feliks_2x2_1[5]={1.92, 2.88, 1.70, 2.39, 1.56};
+    double Feliks_2x2_2[5]={4.46, 1.42, 1.78, 1.42, 1.32};
+    double Feliks_3x3_1[5]={7.16, 5.04, 4.67, 6.55, 4.99};
+    double Feliks_OneHanded_1[5]={11.21, 7.69, 9.18, 8.64, 13.42};
+    double Feliks_7x7_1[5]={118.18, 130.09, 113.62};
+
+    compList[0].init("Canberra Autumn 2018", 108,0,21,4,2018);
+    compList[1].init("Australian Nationals 2018", 199,1,6,10,2018);
+    compList[2].init("Odd Day in Sydney 2019", 142,2,10,11,2019);
+    compList[3].init("Turn Around Tassie 2020", 68,3,12,12,2020);
+    compList[4].init("Brilliant Ballarat 2023", 140,4,25,2,2023);
+
+
+    numberOfComps+=5;
+    competitors[0].addResultData(_2x2, Feliks_2x2_1,5,2,No_Single_Record, No_Average_Record, 4);
+    competitors[0].addResultData(_2x2, Feliks_2x2_2,5,1,No_Single_Record, CR_Average, 0);
+    competitors[0].addResultData(_3x3, Feliks_3x3_1,5,1,No_Single_Record, WR_Average, 2);
+    competitors[0].addResultData(OneHanded, Feliks_OneHanded_1,5,1,No_Single_Record, CR_Average, 3);
+    competitors[0].addResultData(_7x7, Feliks_7x7_1,3,1,CR_Single, CR_Average, 1);
+
     competitors[0].calculateRecords();
     competitors[0].findBestResults();
     competitors[0].print();
+
+    //Max Park
+    Competitor c2(String("Max Park"), String("USA"), 21);
+    competitors[1]=c2;
+    numberOfCompetitors++;
+
+    compList[5].init("Circle City Summer 2022",77,5,6,8,2022);
+    compList[6].init("Arizona Speedcubing Spring 2023", 110,6,19,3,2023);
+    compList[7].init("Bay Area Speedcubin' 29 PM 2022", 117,7,3,4,2022);
+
+    numberOfComps+=3;
+
+    double Max_3x3_1[5]={3.63, 5.52, 5.66, 5.37, 5.22};
+    double Max_4x4_1[5]={17.60, 18.49, 19.37, 23.80, 20.28};
+    double Max_4x4_2[5]={16.79, 26.52, 22.85, 20.01, 17.56};
+
+    competitors[1].addResultData(_3x3, Max_3x3_1,5,1,WR_Single, No_Average_Record, 5);
+    competitors[1].addResultData(_4x4, Max_4x4_1,5,1,No_Single_Record, WR_Average, 6);
+    competitors[1].addResultData(_4x4, Max_4x4_2,5,1,WR_Single, No_Average_Record, 7);
+
+    competitors[1].calculateRecords();
+    competitors[1].findBestResults();
+    competitors[1].print();
+
+
+    //################# MENIUL INTERACTIV ##################
     int userInput=1;
     cout<<"\nMeniu\n";
     while(userInput!=0){
@@ -519,7 +660,7 @@ int main()
                     }
                     cout<<"La care din aceste competitii a fost obtinut rezultatul? Daca competitia nu apare pe lista, trebuie mai intai adaugata.\n";
                     for(int i=0; i<numberOfComps; i++){
-                        cout<<i<<". ";
+                        cout<<compList[i].getId()<<". ";
                         compList[i].print();
                         cout<<'\n';
                     }
@@ -533,23 +674,155 @@ int main()
                         competitors[numberOfCompetitors-1].print();
                     }
                 }
+            } else if(userInput==2){
+                cout<<"La care competitor doriti sa adaugati rezultatul?\n";
+                for(int i=0; i<numberOfCompetitors; i++){
+                    String tmp=competitors[i].getName();
+                    cout<<i<<". "<<tmp;
+                    cout<<'\n';
+                }
+                cout<<'\n';
+                int indexCompetitor;
+                cin>>indexCompetitor;
+                cout<<"La ce proba este acest rezultat?\n";
+                cout<<"Apasati numarul corespunzator:\n";
+                cout<<"0. 2x2\n";
+                cout<<"1. 3x3\n";
+                cout<<"2. 4x4\n";
+                cout<<"3. 5x5\n";
+                cout<<"4. 6x6\n";
+                cout<<"5. 7x7\n";
+                cout<<"6. Megaminx\n";
+                cout<<"7. Pyraminx\n";
+                cout<<"8. One Handed\n";
+                cout<<"9. Blindfolded\n";
+                cout<<"10. Square-1\n";
+                cout<<"11. Multi-Blind\n";
+                cout<<"12. 4x4 Blindfolded\n";
+                cout<<"13. 5x5 Blindfolded\n";
+                cout<<"14. Skewb\n";
+                cout<<"15. Fewest Moves Challenge\n";
+                cout<<"16. Clock\n";
+                cin>>userInput;
+                Events proba=static_cast<Events>(userInput); //convertire din int in enum-ul Events, pentru a putea apela functia
+                cout<<"Cati timpi?\n";
+                cin>>userInput;
+                int times_len=userInput;
+                double times[times_len];
+                cout<<"Introduceti timpii, separati prin spatiu\n";
+                for(int i=0; i<times_len; i++){
+                    cin>>times[i];
+                }
+                cout<<"Pe ce loc s-a clasat concurentul cu acest rezultat?\n";
+                int __rank;
+                cin>>__rank;
+                cout<<"Single-ul din acest rezultat este vreun record?\n";
+                cout<<"0. Niciun record\n";
+                cout<<"1. NR Single\n";
+                cout<<"2. CR Single\n";
+                cout<<"3. WR Single\n";
+                cin>>userInput;
+                SingleRecordTypes sgRecord;
+                if(userInput==0){
+                    sgRecord=No_Single_Record;
+                } else if(userInput==1){
+                    sgRecord=NR_Single;
+                } else if(userInput==2){
+                    sgRecord=CR_Single;
+                } else if(userInput==3){
+                    sgRecord=WR_Single;
+                }
+                cout<<"Average-ul din acest rezultat este vreun record?\n";
+                cout<<"0. Niciun record\n";
+                cout<<"1. NR Single\n";
+                cout<<"2. CR Single\n";
+                cout<<"3. WR Single\n";
+                cin>>userInput;
+                AverageRecordTypes avgRecord;
+                if(userInput==0){
+                    avgRecord=No_Average_Record;
+                } else if(userInput==1){
+                    avgRecord=NR_Average;
+                } else if(userInput==2){
+                    avgRecord=CR_Average;
+                } else if(userInput==3){
+                    avgRecord=WR_Average;
+                }
+                cout<<"La care din aceste competitii a fost obtinut rezultatul? Daca competitia nu apare pe lista, trebuie mai intai adaugata.\n";
+                for(int i=0; i<numberOfComps; i++){
+                    cout<<compList[i].getId()<<". ";
+                    compList[i].print();
+                    cout<<'\n';
+                }
+                int compId;
+                cin>>compId;
+                competitors[indexCompetitor].addResultData(proba,times,times_len,__rank,sgRecord,avgRecord,compId);
+                competitors[indexCompetitor].findBestResults();
+                cout<<"Apasati 2 pentru a afisa acest concurent in urma actualizarii, sau 3 pentru a afisa single-ul si average-ul acestui rezultat ";
+                cin>>userInput;
+                if(userInput==2){
+                    competitors[indexCompetitor].print();
+                } else if(userInput==3){
+                    //competitors[indexCompetitor].getResults()[competitors[indexCompetitor].getResultsLen()-1].calculateAverageAndSingle();
+                    cout<<"Single: "<<competitors[indexCompetitor].getResults()[competitors[indexCompetitor].getResultsLen()-1].getSingle()<<" Average: "<<competitors[indexCompetitor].getResults()[competitors[indexCompetitor].getResultsLen()-1].getAverage()<<'\n';
+                }
+            } else if(userInput==3){
+                cout<<"Introduceti numele competitiei pe care vreti sa o adaugati ";
+                char compName[50];
+                cin.get();
+                cin.getline(compName,50);
+                String compNameStr(compName);
+                cout<<"Cati competitori au participat? ";
+                int nrCompetitori;
+                cin>>nrCompetitori;
+                int id=compList[numberOfComps-1].getId()+1;
+                cout<<"Introduceti data competitiei, ziua luna an (numere cu spatiu intre ele) ";
+                int zi, luna, an;
+                cin>>zi>>luna>>an;
+                Competition tmpComp(compNameStr,nrCompetitori,id, zi, luna, an);
+                compList[numberOfComps++]=tmpComp;
+                cout<<"Apasati 2 pentru a afisa aceasta competitie\n3 pentru a modifica numele\n4 pentru a modifica numarul de concurenti\n5 pentru a seta un alt id\n";
+                cin>>userInput;
+                if(userInput==2){
+                    compList[numberOfComps-1].printDetailed();
+                } else if(userInput==3){
+                    cout<<"Introduceti numele nou ";
+                    cin.get();
+                    cin.getline(compName,50);
+                    String compNameStr2(compName);
+                    compList[numberOfComps-1].setName(compNameStr2);
+                    cout<<"Apasati 2 pentru a afisa competitia ";
+                    cin>>userInput;
+                    if(userInput==2){
+                        compList[numberOfComps-1].printDetailed();
+                    }
+                } else if(userInput==4){
+                    cout<<"Introduceti numarul de concurenti ";
+                    cin>>userInput;
+                    compList[numberOfComps-1].setNumberOfCompetitors(userInput);
+                    cout<<"Apasati 2 pentru a afisa competitia ";
+                    cin>>userInput;
+                    if(userInput==2){
+                        compList[numberOfComps-1].printDetailed();
+                    }
+                } else if(userInput==5){
+                    cout<<"Atentie, id-ul trebuie sa fie diferit fata de cele deja existente in baza de date:\n";
+                    for(int i=0; i<numberOfComps; i++){
+                        cout<<compList[i].getId()<<". ";
+                        compList[i].print();
+                        cout<<'\n';
+                    }
+                    cout<<"Introduceti noul id ";
+                    cin>>userInput;
+                    compList[numberOfComps-1].setDifferentId(userInput);
+                    cout<<"Apasati 2 pentru a afisa competitia ";
+                    cin>>userInput;
+                    if(userInput==2){
+                        compList[numberOfComps-1].printDetailed();
+                    }
+                }
             }
         }
-
     }
-    //Result temp2(_2x2, tempTimes,5,4,No_Single_Record, No_Average_Record, 4);
-    //Result temp3(_2x2, tempTimes,5,4,No_Single_Record, No_Average_Record, 4);
-    //Result temp4(_3x3, tempTimes,5,4,NR_Single, NR_Average, 4);
-
-    //Result* tempArr=new Result*{&temp1, &temp2, &temp3};
-    //c1.addResults(temp1);
-    //c1.addResults(temp2);
-    //c1.addResults(temp3);
-    //c1.addResults(temp4);
-
-    //c1.addResults(&temp3);
-
-
-
     return 0;
 }

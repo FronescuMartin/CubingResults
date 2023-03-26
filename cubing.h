@@ -13,6 +13,7 @@ enum AverageRecordTypes{
     PR_Average, NR_Average, CR_Average, WR_Average, No_Average_Record
 };
 class String{
+private:
     char *str;
 public:
     String();
@@ -41,6 +42,8 @@ private:
 public:
     Date(int _day, Month _month, int _year);
     Date(int _day, int _month, int _year);
+    Date();
+    void init(int _day, int _month, int _year);
     friend ostream& operator << (ostream &out, Date &d);
 };
 class Competition;
@@ -72,7 +75,6 @@ public:
     AverageRecordTypes getAverageRecord();
     Events getEvent();
     double roundTo2DecimalPlaces(double num);
-    //getCompetitionPointerFromId;
 };
 
 class Competitor{
@@ -90,7 +92,6 @@ public:
     Competitor(String name, String country, int age);
     Competitor();
     ~Competitor();
-    //void init();
     void addResultData(Events event, double _times[], int length, int _rank, SingleRecordTypes recordSg=No_Single_Record, AverageRecordTypes recorAvg=No_Average_Record, int _comp_id=-1);
     String getName();
     void setAge(int newAge);
@@ -99,29 +100,31 @@ public:
     int getNumberOfRecords();
     void findBestResults();
     void print();
+    Result* getResults();
+    int getResultsLen();
 
 };
-
-
 
 class Competition{
 private:
     String name;
-    //Date date;
-    int numberOfCompetititors;
+    Date date;
+    int numberOfCompetitors;
     int id;
 public:
     Competition();
-    Competition(String &&_name, int _numberOfCompetitors, int _id);
+    Competition(String _name, int _numberOfCompetitors, int _id);
+    Competition(String _name, int _numberOfCompetitors, int _id, int _day, int _month, int _year);
     void init(String _name, int _numberOfCompetitors, int _id);
+    void init(String _name, int _numberOfCompetitors, int _id, int _day, int _month, int _year);
+    void setName(String newName);
+    void setNumberOfCompetitors(int n);
+    void setDifferentId(int n);
     int getId();
     String getName();
     void print();
+    void printDetailed();
 
 };
-
-
-
-
 
 #endif // CUBING_H_INCLUDED
