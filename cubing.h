@@ -39,11 +39,12 @@ private:
     int day;
     int month;
     int year;
-public:
+protected:
     Date(int _day, Month _month, int _year);
     Date(int _day, int _month, int _year);
     Date();
-    void init(int _day, int _month, int _year);
+    void init_date(int _day, int _month, int _year);
+    void print_date();
     friend ostream& operator << (ostream &out, Date &d);
 };
 class Competition;
@@ -79,10 +80,18 @@ public:
     int getTimesLen();
 };
 
-class Competitor{
-private:
+class Person{
+protected:
     String name, country;
-    int id, numberOfNRs, numberOfCRs, numberOfWRs, age;
+    int age;
+public:
+    Person(String name, String country, int age);
+    Person();
+};
+
+class Competitor:public Person{
+private:
+    int id, numberOfNRs, numberOfCRs, numberOfWRs;
     int results_len;
     Result* results;
     Result* bestResultsSingle[17];
@@ -108,10 +117,9 @@ public:
 
 };
 
-class Competition{
+class Competition:public Date{ //mostenire
 private:
     String name;
-    Date date;
     int numberOfCompetitors;
     int id;
 public:
@@ -128,6 +136,16 @@ public:
     void print();
     void printDetailed();
 
+};
+
+class VectorCompetitii:private vector<Competition*>{ //mostenire privata
+public:
+    using vector<Competition*>::operator[];
+    using vector<Competition*>::size;
+    using vector<Competition*>::back;
+
+    void add(Competition* c);
+    ~VectorCompetitii();
 };
 
 #endif // CUBING_H_INCLUDED
