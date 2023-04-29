@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iomanip>
 #include <vector>
+#include <cstring>
 #include "cubing.h"
 using namespace std;
 
@@ -81,8 +82,8 @@ ostream& operator <<(ostream &out, String &s){ //operatorul << supraincarcat pen
 
 //########## PERSON ##########
 
-Person::Person(String name, String country, int age){
-    this->name=name;
+Person::Person(String _name, String country, int age){
+    this->name=_name;
     this->country=country;
     this->age=age;
 }
@@ -105,7 +106,7 @@ Competitor::Competitor(){ //constructorul fara parametru, seteaza valori default
         hasResultInEvent[i]=false; //initializarea vectorului care spune daca concurentul are vreun rezultat in proba respectiva
     }
 }
-Competitor::Competitor(String name, String country, int age):Person(name, country, age){ //constructor cu parametri
+Competitor::Competitor(String _name, String country, int age):Person(_name, country, age){ //constructor cu parametri
     this->results=nullptr;
     //this->name=name;
     //this->country=country;
@@ -317,6 +318,134 @@ Result* Competitor::getResults(){
 }
 int Competitor::getResultsLen(){
     return results_len;
+}
+
+//##########DELEGAT###########
+Delegat::Delegat(String _name, String country, int age, TypesOfDelegate type, string _regions):Person(_name, country, age){
+    this->delegateType=type;
+    this->regions=_regions;
+}
+Delegat::Delegat():Person(){
+    this->regions="";
+}
+void Delegat::addCompetitionDelegated(int comp){
+    this->competitionsDelegated.push_back(comp);
+}
+void Delegat::addCompetitionsDelegated(vector<int> comps){
+    for(int i=0; i<comps.size(); i++){
+        this->competitionsDelegated.push_back(comps[i]);
+    }
+}
+void Delegat::print(){
+    cout<<"Nume: "<<this->name<<'\n';
+    if(delegateType==SeniorDelegate){
+        cout<<"Delegat Senior"<<'\n';
+    } else if(delegateType==JuniorDelegate){
+        cout<<"Delegat Junior"<<'\n';
+    } else if(delegateType==CandidateDelegate){
+        cout<<"Delegat Candidat"<<'\n';
+    } else if(delegateType==RegionalDelegate){
+        cout<<"Delegat Regional"<<'\n';
+    } else if(delegateType==Delegate){
+        cout<<"Delegat"<<'\n';
+    }
+    cout<<"Regiune Delegata: "<<regions<<'\n';
+    cout<<"Tara: "<<this->country<<'\n';
+    cout<<"#################################\n\n";
+
+}
+
+//#########DelegateCompetitor
+DelegatCompetitor::DelegatCompetitor(String _name, String country, int age, TypesOfDelegate type, string _regions){
+    this->delegateType=type;
+    this->regions=_regions;
+    this->name=_name;
+    this->country=country;
+    this->age=age;
+}
+DelegatCompetitor::DelegatCompetitor():Delegat(), Competitor(){}
+void DelegatCompetitor::print(){
+    cout<<"Nume: "<<this->name<<'\n';
+    if(delegateType==SeniorDelegate){
+        cout<<"Delegat Senior"<<'\n';
+    } else if(delegateType==JuniorDelegate){
+        cout<<"Delegat Junior"<<'\n';
+    } else if(delegateType==CandidateDelegate){
+        cout<<"Delegat Candidat"<<'\n';
+    } else if(delegateType==RegionalDelegate){
+        cout<<"Delegat Regional"<<'\n';
+    } else if(delegateType==Delegate){
+        cout<<"Delegat"<<'\n';
+    }
+    cout<<"Regiune Delegata: "<<regions<<'\n';
+
+    cout<<"Tara: "<<this->country<<'\n';
+    cout<<"Numar Recorduri: "<<this->getNumberOfRecords()<<'\n';
+    cout<<"Toate Rezultatele:\n";
+    for(int i=0; i<results_len; i++){
+        String tmp=eventNameFromEnum(results[i].getEvent());
+        cout<<tmp<<": ";
+        results[i].print();
+    }
+    cout<<"Cele mai bune rezultate obtinute: "<<'\n';
+    //hasResultInEvent contine true doar daca concurentul are un rezultat in proba respectiva, il folosim
+    //pentru a nu intra in elemente din vector nealocate, neexistand valori
+
+    for(int i=0; i<17; i++){
+        if(hasResultInEvent[i]==true){
+            String tmp=eventNameFromEnum(i);
+            cout<<tmp<<' ';
+            cout<<"Single: ";
+            float temp=bestResultsSingle[i]->getSingle();
+            if(temp<60){
+                cout<<temp<<' ';
+            } else {
+                int mins=floor(temp/60);
+                double seconds=temp-mins*60;
+                cout<<mins<<':';
+                if(seconds<10){
+                    cout<<'0';
+                }
+                cout<<round(seconds*100)/100.0<<' ';
+            }
+            cout<<" Average: ";
+            temp=bestResultsAverage[i]->getAverage();
+            if(temp<60){
+                cout<<fixed<<setprecision(2)<<temp<<' ';
+            } else {
+                int mins=floor(temp/60);
+                double seconds=temp-mins*60;
+                cout<<mins<<':';
+                if(seconds<10){
+                    cout<<'0';
+                }
+                cout<<fixed<<setprecision(2)<<round(seconds*100)/100.0<<' ';
+            }
+            cout<<'\n';
+        }
+    }
+    cout<<'\n';
+    cout<<"Timpul mediu pentru fiecare proba:\n";
+    for(int i=0; i<17; i++){
+        if(hasResultInEvent[i]==true){
+            String tmp=eventNameFromEnum(i);
+            cout<<tmp<<": ";
+            float temp=averageResult[i];
+            if(temp<60){
+                cout<<temp<<' ';
+            } else {
+                int mins=floor(temp/60);
+                double seconds=temp-mins*60;
+                cout<<mins<<':';
+                if(seconds<10){
+                    cout<<'0';
+                }
+                cout<<round(seconds*100)/100.0<<' ';
+            }
+            cout<<'\n';
+        }
+    }
+    cout<<"#################################\n\n";
 }
 
 //###########DATE############
@@ -584,14 +713,12 @@ VectorCompetitii::~VectorCompetitii(){
     }
 }
 
-
 int main()
 {
-    vector<Competitor*> competitors;
+    vector<Person*> people;
     //date pentru testarea claselor implementate
     //Feliks Zemdegs
-    Competitor c1(String("Feliks Zemdegs"), String("Australia"), 27);
-    competitors.push_back(&c1);
+    Competitor *c1=new Competitor(String("Feliks Zemdegs"), String("Australia"), 27);
 
     double Feliks_2x2_1[5]={1.92, 2.88, 1.70, 2.39, 1.56};
     double Feliks_2x2_2[5]={4.46, 1.42, 1.78, 1.42, 1.32};
@@ -607,20 +734,26 @@ int main()
 
 
 
-    competitors[0]->addResultData(_2x2, Feliks_2x2_1,5,2,No_Single_Record, No_Average_Record, 4);
-    competitors[0]->addResultData(_2x2, Feliks_2x2_2,5,1,No_Single_Record, CR_Average, 0);
-    competitors[0]->addResultData(_3x3, Feliks_3x3_1,5,1,No_Single_Record, WR_Average, 2);
-    competitors[0]->addResultData(OneHanded, Feliks_OneHanded_1,5,1,No_Single_Record, CR_Average, 3);
-    competitors[0]->addResultData(_7x7, Feliks_7x7_1,3,1,CR_Single, CR_Average, 1);
+    c1->addResultData(_2x2, Feliks_2x2_1,5,2,No_Single_Record, No_Average_Record, 4);
+    c1->addResultData(_2x2, Feliks_2x2_2,5,1,No_Single_Record, CR_Average, 0);
+    c1->addResultData(_3x3, Feliks_3x3_1,5,1,No_Single_Record, WR_Average, 2);
+    c1->addResultData(OneHanded, Feliks_OneHanded_1,5,1,No_Single_Record, CR_Average, 3);
+    c1->addResultData(_7x7, Feliks_7x7_1,3,1,CR_Single, CR_Average, 1);
 
-    competitors[0]->calculateRecords();
-    competitors[0]->findBestResults();
-    competitors[0]->calculateAverageResult();
-    competitors[0]->print();
+    c1->calculateRecords();
+    c1->findBestResults();
+    c1->calculateAverageResult();
+    people.push_back(c1);
+
+    people.back()->print();
+
+    //John Doe
+    Delegat *delegate1=new Delegat(String("John Doe"), String("Bulgaria"), 43, SeniorDelegate, "Europa");
+    people.push_back(delegate1);
+    people.back()->print();
 
     //Max Park
-    Competitor c2(String("Max Park"), String("USA"), 21);
-    competitors.push_back(&c2);
+    Competitor *c2=new Competitor(String("Max Park"), String("USA"), 21);
 
     compList.add(new Competition("Circle City Summer 2022",77,5,6,8,2022));
     compList.add(new Competition("Arizona Speedcubing Spring 2023", 110,6,19,3,2023));
@@ -631,15 +764,29 @@ int main()
     double Max_4x4_1[5]={17.60, 18.49, 19.37, 23.80, 20.28};
     double Max_4x4_2[5]={16.79, 26.52, 22.85, 20.01, 17.56};
 
-    competitors[1]->addResultData(_3x3, Max_3x3_1,5,1,WR_Single, No_Average_Record, 5);
-    competitors[1]->addResultData(_4x4, Max_4x4_1,5,1,No_Single_Record, WR_Average, 6);
-    competitors[1]->addResultData(_4x4, Max_4x4_2,5,1,WR_Single, No_Average_Record, 7);
+    c2->addResultData(_3x3, Max_3x3_1,5,1,WR_Single, No_Average_Record, 5);
+    c2->addResultData(_4x4, Max_4x4_1,5,1,No_Single_Record, WR_Average, 6);
+    c2->addResultData(_4x4, Max_4x4_2,5,1,WR_Single, No_Average_Record, 7);
 
-    competitors[1]->calculateRecords();
-    competitors[1]->findBestResults();
-    competitors[1]->calculateAverageResult();
-    competitors[1]->print();
+    c2->calculateRecords();
+    c2->findBestResults();
+    c2->calculateAverageResult();
+    people.push_back(c2);
 
+    people.back()->print();
+
+    //Sarah Strong
+    DelegatCompetitor* dc1=new DelegatCompetitor(String("Sarah Strong"), String("Canada"), 27, Delegate, "Canada");
+
+    compList.add(new Competition(String("Markham 3x3x3 Morning 2023"), 115, 8, 29, 4, 2023));
+    double Sarah_3x3_1[5]={12.49, 15.14, 13.67, 11.42, 11.46};
+    dc1->addResultData(_3x3, Sarah_3x3_1,5, 22, No_Single_Record, No_Average_Record, 8);
+
+    dc1->calculateRecords();
+    dc1->findBestResults();
+    dc1->calculateAverageResult();
+    people.push_back(dc1);
+    people.back()->print();
 
     //################# MENIUL INTERACTIV ##################
     int userInput=1;
@@ -665,13 +812,11 @@ int main()
                 String taraTemp(tmp2);
                 cout<<"Varsta competitorului: ";
                 cin>>age;
-                Competitor tempCompetitor(numeTemp, taraTemp, age);
-                tempCompetitor.print();
-                competitors.push_back(&tempCompetitor);
+                people.push_back(new Competitor(numeTemp, taraTemp, age));
                 cout<<"Apasati 2 pentru a afisa acest concurent, 3 pentru a adauga un rezultat apeland functia addResultData, 0 pentru a va intoarce la meniul principal\n";
                 cin>>userInput;
                 if(userInput==2){
-                    competitors.back()->print();
+                    people.back()->print();
                 } else if(userInput==3){
                     cout<<"La ce proba este acest rezultat?\n";
                     cout<<"Apasati numarul corespunzator:\n";
@@ -745,20 +890,28 @@ int main()
                     }
                     int compId;
                     cin>>compId;
-                    competitors.back()->addResultData(proba,times,times_len,__rank,sgRecord,avgRecord,compId);
-                    competitors.back()->findBestResults();
-                    competitors.back()->calculateAverageResult();
+                    Competitor* tempPtr=dynamic_cast<Competitor*>(people.back());
+                    tempPtr->addResultData(proba,times,times_len,__rank,sgRecord,avgRecord,compId);
+                    tempPtr->findBestResults();
+                    tempPtr->calculateAverageResult();
 
                     cout<<"Apasati 2 pentru a afisa acest concurent in urma actualizarii\n";
                     cin>>userInput;
                     if(userInput==2){
-                        competitors.back()->print();
+                        people.back()->print();
                     }
                 }
             } else if(userInput==2){
                 cout<<"La care competitor doriti sa adaugati rezultatul?\n";
-                for(int i=0; i<competitors.size(); i++){
-                    String tmp=competitors[i]->getName();
+                vector<Competitor*> actualCompetitors; //vector cu persoanele care sunt chiar concurenti (trebuie schimbat numele vectorului initial).
+                for(int i=0; i<people.size(); i++){
+                    Competitor* tempPtr=dynamic_cast<Competitor*>(people[i]);
+                    if(tempPtr){
+                        actualCompetitors.push_back(tempPtr);
+                    }
+                }
+                for(int i=0; i<actualCompetitors.size(); i++){
+                    String tmp=actualCompetitors[i]->getName();
                     cout<<i<<". "<<tmp;
                     cout<<'\n';
                 }
@@ -837,17 +990,17 @@ int main()
                 }
                 int compId;
                 cin>>compId;
-                competitors[indexCompetitor]->addResultData(proba,times,times_len,__rank,sgRecord,avgRecord,compId);
-                competitors[indexCompetitor]->findBestResults();
-                competitors[indexCompetitor]->calculateAverageResult();
+                actualCompetitors[indexCompetitor]->addResultData(proba,times,times_len,__rank,sgRecord,avgRecord,compId);
+                actualCompetitors[indexCompetitor]->findBestResults();
+                actualCompetitors[indexCompetitor]->calculateAverageResult();
 
                 cout<<"Apasati 2 pentru a afisa acest concurent in urma actualizarii, sau 3 pentru a afisa single-ul si average-ul acestui rezultat ";
                 cin>>userInput;
                 if(userInput==2){
-                    competitors[indexCompetitor]->print();
+                    actualCompetitors[indexCompetitor]->print();
                 } else if(userInput==3){
                     //competitors[indexCompetitor].getResults()[competitors[indexCompetitor].getResultsLen()-1].calculateAverageAndSingle();
-                    cout<<"Single: "<<competitors[indexCompetitor]->getResults()[competitors[indexCompetitor]->getResultsLen()-1].getSingle()<<" Average: "<<competitors[indexCompetitor]->getResults()[competitors[indexCompetitor]->getResultsLen()-1].getAverage()<<'\n';
+                    cout<<"Single: "<<actualCompetitors[indexCompetitor]->getResults()[actualCompetitors[indexCompetitor]->getResultsLen()-1].getSingle()<<" Average: "<<actualCompetitors[indexCompetitor]->getResults()[actualCompetitors[indexCompetitor]->getResultsLen()-1].getAverage()<<'\n';
                 }
             } else if(userInput==3){
                 cout<<"Introduceti numele competitiei pe care vreti sa o adaugati ";
@@ -906,6 +1059,9 @@ int main()
             }
         }
     }
+    //dezalocare persoane
+    for(int i=0; i<people.size(); i++){
+        delete people[i];
+    }
     return 0;
-    //check if vector implementation of compList and competitors is correct (numcomps or sth still there?)
 }

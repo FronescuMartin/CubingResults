@@ -1,6 +1,6 @@
 #ifndef CUBING_H_INCLUDED
 #define CUBING_H_INCLUDED
-#include <iostream>
+
 using namespace std;
 enum Events{
     _2x2, _3x3, _4x4, _5x5, _6x6, _7x7, Megaminx, Pyraminx, OneHanded, Blindfolded, Square_1, MultiBLD, _4BLD, _5BLD, Skewb, FewestMovesChallenge, Clock
@@ -11,6 +11,10 @@ enum SingleRecordTypes{
 };
 enum AverageRecordTypes{
     PR_Average, NR_Average, CR_Average, WR_Average, No_Average_Record
+};
+
+enum TypesOfDelegate{
+    SeniorDelegate, JuniorDelegate, Delegate, RegionalDelegate, CandidateDelegate
 };
 class String{
 private:
@@ -84,13 +88,15 @@ class Person{
 protected:
     String name, country;
     int age;
-public:
     Person(String name, String country, int age);
     Person();
+public:
+    virtual ~Person(){}
+    virtual void print()=0;
 };
 
-class Competitor:public Person{
-private:
+class Competitor:virtual public Person{ //parte din mostenire in diamant
+protected:
     int id, numberOfNRs, numberOfCRs, numberOfWRs;
     int results_len;
     Result* results;
@@ -115,6 +121,28 @@ public:
     Result* getResults();
     int getResultsLen();
 
+};
+
+class Delegat:virtual public Person{ //parte din mostenire in diamant
+protected:
+    TypesOfDelegate delegateType;
+    string regions;
+    vector<int>competitionsDelegated; //id-urile competitiilor la care a fost delegat
+public:
+    Delegat(String name, String country, int age, TypesOfDelegate type, string _regions);
+    Delegat();
+    ~Delegat(){}
+    void addCompetitionDelegated(int comp);
+    void addCompetitionsDelegated(vector<int> comps);
+    void print();
+};
+
+class DelegatCompetitor:public Delegat, public Competitor{
+public:
+    DelegatCompetitor(String name, String country, int age, TypesOfDelegate type, string _regions);
+    DelegatCompetitor();
+    ~DelegatCompetitor(){}
+    void print();
 };
 
 class Competition:public Date{ //mostenire
