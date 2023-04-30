@@ -13,91 +13,24 @@ VectorCompetitii compList;
 //deoarece fiecare competitor are in vectorul de rezultate un pointer catre competitia la care
 //s-a obtinut acel rezultat
 
-
-String::String(){ //constructorul fara parametru pentru string, initializeaza doar caracterul nul
-    str=new char[1];
-    str[0]='\0';
-}
-String::String(char* input){ //constructor cu parametru pointer la sir de caractere
-    str=new char[strlen(input)+1];
-    strcpy(str, input);
-    str[strlen(input)]='\0';
-}
-String::String(const String &s){ //constructor de copiere
-    str=new char[strlen(s.str)+1];
-    strcpy(str, s.str);
-    //str[strlen(s.str)]='\0';
-}
-String::String(String &&s){ //constructor de mutare
-    str=s.str;
-    s.str=nullptr;
-}
-String& String::operator =(String &&s){ //operator= de mutare
-    str=s.str;
-    s.str=nullptr;
-}
-String& String::operator =(const String &s){ //operator= de copiere
-    delete[] str;
-    str=new char[strlen(s.str)+1];
-    strcpy(str, s.str);
-    str[strlen(s.str)]='\0';
-    return *this;
-}
-
-char* String::findStr(const char ch[]){ //implementare pentru strstr in clasa String
-    char *p=strstr(this->str, ch);
-    return p;
-}
-
-
-String::~String(){ //destructor
-    delete[] str;
-}
-String String::operator + (const String &s2){ //operatorul + supraincarcat, se aloca un nou spatiu de memorie,
-    // in care se copiaza continutul vechi, + continutul de la al doilea argument
-    char *tmp_str=new char[strlen(str)+strlen(s2.str)+1];
-    strncpy(tmp_str, str, strlen(str));
-    strncpy(tmp_str+strlen(str), s2.str, strlen(s2.str));
-    strcpy(tmp_str+(strlen(str)+strlen(s2.str)),"\0");
-    String tmp(tmp_str);
-    delete[] tmp_str; //trebuie dealocat spatiu la care pointa initial tmp_str, pentru a nu duce la memory leak
-    return tmp;
-}
-
-String String::operator + (char ch){ //operatorul+ supraincarcat pentru concatenarea cu un singur caracter
-    char chv[2];
-    chv[0]=ch;
-    char *tmp_str=new char[strlen(str)+2];
-    strncpy(tmp_str, str, strlen(str));
-    strcpy(tmp_str+strlen(str), chv);
-    strcpy(tmp_str+(strlen(str)+1),"\0");
-    String tmp(tmp_str);
-    delete[] tmp_str; //trebuie dealocat spatiu la care pointa initial tmp_str, pentru a nu duce la memory leak
-    return tmp;
-}
-ostream& operator <<(ostream &out, String &s){ //operatorul << supraincarcat pentru cout
-    out<<s.str;
-    return out;
-}
-
 //########## PERSON ##########
 
-Person::Person(String _name, String country, int age){
+Person::Person(string _name, string country, int age){
     this->name=_name;
     this->country=country;
     this->age=age;
 }
 Person::Person(){
-    this->name=String("");
-    this->country=String("");
+    this->name="";
+    this->country="";
     this->age=-1;
 }
 //########## COMPETITOR ###########
 
 Competitor::Competitor(){ //constructorul fara parametru, seteaza valori default
     this->results=nullptr;
-    this->name=String("");
-    this->country=String("");
+    this->name="";
+    this->country="";
     this->results_len=0;
     this->numberOfNRs=0;
     this->numberOfCRs=0;
@@ -106,7 +39,7 @@ Competitor::Competitor(){ //constructorul fara parametru, seteaza valori default
         hasResultInEvent[i]=false; //initializarea vectorului care spune daca concurentul are vreun rezultat in proba respectiva
     }
 }
-Competitor::Competitor(String _name, String country, int age):Person(_name, country, age){ //constructor cu parametri
+Competitor::Competitor(string _name, string country, int age):Person(_name, country, age){ //constructor cu parametri
     this->results=nullptr;
     //this->name=name;
     //this->country=country;
@@ -125,7 +58,7 @@ Competitor::~Competitor(){ //destructor
         delete[] results;
     }
 }
-String Competitor::getName(){
+string Competitor::getName(){
     return this->name;
 }
 void Competitor::setAge(int newAge){
@@ -168,24 +101,24 @@ int Competitor::getNumberOfRecords(){
     return numberOfNRs+numberOfCRs+numberOfWRs;
 }
 
-String Competitor::eventNameFromEnum(int e){ //functia primeste un enum de fapt, dar valoarea e transmisa ca intreg
-    if(e==0) return String("2x2");
-    if(e==1) return String("3x3");
-    if(e==2) return String("4x4");
-    if(e==3) return String("5x5");
-    if(e==4) return String("6x6");
-    if(e==5) return String("7x7");
-    if(e==6) return String("Megaminx");
-    if(e==7) return String("Pyraminx");
-    if(e==8) return String("One Handed");
-    if(e==9) return String("Blindfolded");
-    if(e==10) return String("Square-1");
-    if(e==11) return String("Multi-Blind");
-    if(e==12) return String("4x4 Blindfolded");
-    if(e==13) return String("5x5 Blindfolded");
-    if(e==14) return String("Skewb");
-    if(e==15) return String("Fewest Moves Challenge");
-    if(e==16) return String("Clock");
+string Competitor::eventNameFromEnum(int e){ //functia primeste un enum de fapt, dar valoarea e transmisa ca intreg
+    if(e==0) return "2x2";
+    if(e==1) return "3x3";
+    if(e==2) return "4x4";
+    if(e==3) return "5x5";
+    if(e==4) return "6x6";
+    if(e==5) return "7x7";
+    if(e==6) return "Megaminx";
+    if(e==7) return "Pyraminx";
+    if(e==8) return "One Handed";
+    if(e==9) return "Blindfolded";
+    if(e==10) return "Square-1";
+    if(e==11) return "Multi-Blind";
+    if(e==12) return "4x4 Blindfolded";
+    if(e==13) return "5x5 Blindfolded";
+    if(e==14) return "Skewb";
+    if(e==15) return "Fewest Moves Challenge";
+    if(e==16) return "Clock";
 }
 void Competitor::print(){
     cout<<"Nume: "<<this->name<<'\n';
@@ -193,7 +126,7 @@ void Competitor::print(){
     cout<<"Numar Recorduri: "<<this->getNumberOfRecords()<<'\n';
     cout<<"Toate Rezultatele:\n";
     for(int i=0; i<results_len; i++){
-        String tmp=eventNameFromEnum(results[i].getEvent());
+        string tmp=eventNameFromEnum(results[i].getEvent());
         cout<<tmp<<": ";
         results[i].print();
     }
@@ -203,7 +136,7 @@ void Competitor::print(){
 
     for(int i=0; i<17; i++){
         if(hasResultInEvent[i]==true){
-            String tmp=eventNameFromEnum(i);
+            string tmp=eventNameFromEnum(i);
             cout<<tmp<<' ';
             cout<<"Single: ";
             float temp=bestResultsSingle[i]->getSingle();
@@ -238,7 +171,7 @@ void Competitor::print(){
     cout<<"Timpul mediu pentru fiecare proba:\n";
     for(int i=0; i<17; i++){
         if(hasResultInEvent[i]==true){
-            String tmp=eventNameFromEnum(i);
+            string tmp=eventNameFromEnum(i);
             cout<<tmp<<": ";
             float temp=averageResult[i];
             if(temp<60){
@@ -321,7 +254,7 @@ int Competitor::getResultsLen(){
 }
 
 //##########DELEGAT###########
-Delegat::Delegat(String _name, String country, int age, TypesOfDelegate type, string _regions):Person(_name, country, age){
+Delegat::Delegat(string _name, string country, int age, TypesOfDelegate type, string _regions):Person(_name, country, age){
     this->delegateType=type;
     this->regions=_regions;
 }
@@ -356,7 +289,7 @@ void Delegat::print(){
 }
 
 //#########DelegateCompetitor
-DelegatCompetitor::DelegatCompetitor(String _name, String country, int age, TypesOfDelegate type, string _regions){
+DelegatCompetitor::DelegatCompetitor(string _name, string country, int age, TypesOfDelegate type, string _regions){
     this->delegateType=type;
     this->regions=_regions;
     this->name=_name;
@@ -383,7 +316,7 @@ void DelegatCompetitor::print(){
     cout<<"Numar Recorduri: "<<this->getNumberOfRecords()<<'\n';
     cout<<"Toate Rezultatele:\n";
     for(int i=0; i<results_len; i++){
-        String tmp=eventNameFromEnum(results[i].getEvent());
+        string tmp=eventNameFromEnum(results[i].getEvent());
         cout<<tmp<<": ";
         results[i].print();
     }
@@ -393,7 +326,7 @@ void DelegatCompetitor::print(){
 
     for(int i=0; i<17; i++){
         if(hasResultInEvent[i]==true){
-            String tmp=eventNameFromEnum(i);
+            string tmp=eventNameFromEnum(i);
             cout<<tmp<<' ';
             cout<<"Single: ";
             float temp=bestResultsSingle[i]->getSingle();
@@ -428,7 +361,7 @@ void DelegatCompetitor::print(){
     cout<<"Timpul mediu pentru fiecare proba:\n";
     for(int i=0; i<17; i++){
         if(hasResultInEvent[i]==true){
-            String tmp=eventNameFromEnum(i);
+            string tmp=eventNameFromEnum(i);
             cout<<tmp<<": ";
             float temp=averageResult[i];
             if(temp<60){
@@ -501,7 +434,7 @@ void Date::print_date(){
 }
 
 //###########COMPETITION############
-Competition::Competition(String _name, int _numberOfCompetitors, int _id, int _day, int _month, int _year):Date(_day, _month, _year){ //apeleaza constructorul din Date prin lista de initializare.
+Competition::Competition(string _name, int _numberOfCompetitors, int _id, int _day, int _month, int _year):Date(_day, _month, _year){ //apeleaza constructorul din Date prin lista de initializare.
     //constructor cu parametri
     this->name=_name;
     this->numberOfCompetitors=_numberOfCompetitors;
@@ -514,14 +447,14 @@ Competition::Competition(){
     this->id=-1;
 }
 
-void Competition::init(String _name, int _numberOfCompetitors, int _id){
+void Competition::init(string _name, int _numberOfCompetitors, int _id){
     //este apelat init in cazul in care se face un vector de obiecte, si atunci initial nu se pot transmite parametrii
     this->name=_name;
     this->numberOfCompetitors=_numberOfCompetitors;
     this->id=_id;
 }
 
-void Competition::init(String _name, int _numberOfCompetitors, int _id, int _day, int _month, int _year){
+void Competition::init(string _name, int _numberOfCompetitors, int _id, int _day, int _month, int _year){
     //la fel ca mai sus, dar in cazul in care se transmite si data competitiei
     this->name=_name;
     this->numberOfCompetitors=_numberOfCompetitors;
@@ -533,7 +466,7 @@ void Competition::init(String _name, int _numberOfCompetitors, int _id, int _day
 int Competition::getId(){
     return this->id;
 }
-String Competition::getName(){
+string Competition::getName(){
     return this->name;
 }
 
@@ -552,7 +485,7 @@ void Competition::printDetailed(){
 
 //setteri pentru datele membre private
 //sunt folositi in cadrul meniului interactiv
-void Competition::setName(String newName){
+void Competition::setName(string newName){
     this->name=newName;
 }
 
@@ -561,6 +494,33 @@ void Competition::setNumberOfCompetitors(int n){
 }
 void Competition::setDifferentId(int n){
     this->id=n;
+}
+string Competition::typeOfCompetition(){
+    return "WCA Competition";
+}
+
+//########### TOURNAMENT ##############
+Tournament::Tournament(int day, int month, int year, string _winner, string _locationCity, string _runnerUp, int _numberOfCompetitors, vector<int> _bracket, vector<string>_competitors):Date(day, month, year){
+    winner=_winner;
+    runnerUp=_runnerUp;
+    numberOfCompetitors=_numberOfCompetitors;
+    bracket=_bracket;
+    competitors=_competitors;
+}
+Tournament::Tournament():Date(){
+    winner="";
+    runnerUp="";
+    numberOfCompetitors=-1;
+}
+void Tournament::print(){
+    cout<<"Turneul Mondial din "<<year<<'\n';
+    cout<<"Numar participanti: "<<numberOfCompetitors<<'\n';
+    cout<<"Castigatorul turneului a fost "<<winner<<'\n';
+    cout<<"###############################\n\n";
+}
+
+string Tournament::typeOfCompetition(){
+    return "Turneu Mondial";
 }
 
 //########### RESULT ############
@@ -641,8 +601,8 @@ void Result::print(){
 
     cout<<'\n';
     cout<<"Competition: ";
-    String tmp=competition->getName();
-    cout<<tmp<<'\n';
+    string tmp=competition->getName();
+    cout<<tmp<<'\n'; //polimorfism deoarece ofstream mosteneste ostream care mosteneste ios etc?
 }
 double Result::roundTo2DecimalPlaces(double num){
     return round(num * 100) / 100.0;
@@ -716,9 +676,10 @@ VectorCompetitii::~VectorCompetitii(){
 int main()
 {
     vector<Person*> people;
+
     //date pentru testarea claselor implementate
     //Feliks Zemdegs
-    Competitor *c1=new Competitor(String("Feliks Zemdegs"), String("Australia"), 27);
+    Competitor *c1=new Competitor("Feliks Zemdegs", "Australia", 27);
 
     double Feliks_2x2_1[5]={1.92, 2.88, 1.70, 2.39, 1.56};
     double Feliks_2x2_2[5]={4.46, 1.42, 1.78, 1.42, 1.32};
@@ -743,17 +704,15 @@ int main()
     c1->calculateRecords();
     c1->findBestResults();
     c1->calculateAverageResult();
-    people.push_back(c1);
+    people.push_back(c1); //upcasting
 
-    people.back()->print();
 
     //John Doe
-    Delegat *delegate1=new Delegat(String("John Doe"), String("Bulgaria"), 43, SeniorDelegate, "Europa");
-    people.push_back(delegate1);
-    people.back()->print();
+    Delegat *delegate1=new Delegat("John Doe", "Bulgaria", 43, SeniorDelegate, "Europa");
+    people.push_back(delegate1); //upcasting
 
     //Max Park
-    Competitor *c2=new Competitor(String("Max Park"), String("USA"), 21);
+    Competitor *c2=new Competitor("Max Park", "USA", 21);
 
     compList.add(new Competition("Circle City Summer 2022",77,5,6,8,2022));
     compList.add(new Competition("Arizona Speedcubing Spring 2023", 110,6,19,3,2023));
@@ -771,22 +730,26 @@ int main()
     c2->calculateRecords();
     c2->findBestResults();
     c2->calculateAverageResult();
-    people.push_back(c2);
+    people.push_back(c2); //upcasting
 
-    people.back()->print();
 
     //Sarah Strong
-    DelegatCompetitor* dc1=new DelegatCompetitor(String("Sarah Strong"), String("Canada"), 27, Delegate, "Canada");
+    DelegatCompetitor* dc1=new DelegatCompetitor("Sarah Strong", "Canada", 27, Delegate, "Canada");
 
-    compList.add(new Competition(String("Markham 3x3x3 Morning 2023"), 115, 8, 29, 4, 2023));
+    compList.add(new Competition("Markham 3x3x3 Morning 2023", 115, 8, 29, 4, 2023));
     double Sarah_3x3_1[5]={12.49, 15.14, 13.67, 11.42, 11.46};
     dc1->addResultData(_3x3, Sarah_3x3_1,5, 22, No_Single_Record, No_Average_Record, 8);
 
     dc1->calculateRecords();
     dc1->findBestResults();
     dc1->calculateAverageResult();
-    people.push_back(dc1);
-    people.back()->print();
+    people.push_back(dc1); //upcasting
+    //people.back()->print();
+
+    for(int i=0; i<people.size(); i++){
+        people[i]->print(); //polimorfism la executie (people[i] este de tip Person*,
+        // elementele pot fi de tipul clasei derivate
+    }
 
     //################# MENIUL INTERACTIV ##################
     int userInput=1;
@@ -806,13 +769,13 @@ int main()
                 cout<<"Numele competitorului: ";
                 cin.get();
                 cin.getline(tmp, 30);
-                String numeTemp(tmp);
+                string numeTemp(tmp);
                 cout<<"Tara competitorului: ";
                 cin>>tmp2;
-                String taraTemp(tmp2);
+                string taraTemp(tmp2);
                 cout<<"Varsta competitorului: ";
                 cin>>age;
-                people.push_back(new Competitor(numeTemp, taraTemp, age));
+                people.push_back(new Competitor(numeTemp, taraTemp, age)); //upcasting
                 cout<<"Apasati 2 pentru a afisa acest concurent, 3 pentru a adauga un rezultat apeland functia addResultData, 0 pentru a va intoarce la meniul principal\n";
                 cin>>userInput;
                 if(userInput==2){
@@ -890,7 +853,7 @@ int main()
                     }
                     int compId;
                     cin>>compId;
-                    Competitor* tempPtr=dynamic_cast<Competitor*>(people.back());
+                    Competitor* tempPtr=dynamic_cast<Competitor*>(people.back()); //downcasting
                     tempPtr->addResultData(proba,times,times_len,__rank,sgRecord,avgRecord,compId);
                     tempPtr->findBestResults();
                     tempPtr->calculateAverageResult();
@@ -905,13 +868,13 @@ int main()
                 cout<<"La care competitor doriti sa adaugati rezultatul?\n";
                 vector<Competitor*> actualCompetitors; //vector cu persoanele care sunt chiar concurenti (trebuie schimbat numele vectorului initial).
                 for(int i=0; i<people.size(); i++){
-                    Competitor* tempPtr=dynamic_cast<Competitor*>(people[i]);
+                    Competitor* tempPtr=dynamic_cast<Competitor*>(people[i]); //downcasting
                     if(tempPtr){
                         actualCompetitors.push_back(tempPtr);
                     }
                 }
                 for(int i=0; i<actualCompetitors.size(); i++){
-                    String tmp=actualCompetitors[i]->getName();
+                    string tmp=actualCompetitors[i]->getName();
                     cout<<i<<". "<<tmp;
                     cout<<'\n';
                 }
@@ -1007,7 +970,7 @@ int main()
                 char compName[50];
                 cin.get();
                 cin.getline(compName,50);
-                String compNameStr(compName);
+                string compNameStr(compName);
                 cout<<"Cati competitori au participat? ";
                 int nrCompetitori;
                 cin>>nrCompetitori;
@@ -1024,7 +987,7 @@ int main()
                     cout<<"Introduceti numele nou ";
                     cin.get();
                     cin.getline(compName,50);
-                    String compNameStr2(compName);
+                    string compNameStr2(compName);
                     compList[compList.size()-1]->setName(compNameStr2);
                     cout<<"Apasati 2 pentru a afisa competitia ";
                     cin>>userInput;
@@ -1061,7 +1024,9 @@ int main()
     }
     //dezalocare persoane
     for(int i=0; i<people.size(); i++){
-        delete people[i];
+        delete people[i]; //se apeleaza destructorul virtual (people[i] poate fi fie *Competitor,
+        //fie *Delegat, fie *DelegatComepetitor, toate acestea fiind clase derivate,
+        //dar person[i] continand pointer de tip *Person.
     }
     return 0;
 }

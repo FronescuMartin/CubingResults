@@ -16,34 +16,16 @@ enum AverageRecordTypes{
 enum TypesOfDelegate{
     SeniorDelegate, JuniorDelegate, Delegate, RegionalDelegate, CandidateDelegate
 };
-class String{
-private:
-    char *str;
-public:
-    String();
-    String(char *str);
-    String(const String &s);
-    String(String &&s);
-    ~String();
-    String operator +(const String &s2);
-    String& operator =(const String &s);
-    String& operator =(String &&s);
-    String operator + (char a);
-    char* findStr(const char ch[]);
-    friend ostream& operator << (ostream &out, String &s);
-
-};
 
 enum Month{
     January=1, February=2, March=3, April=4, May=5, June=6, July=7, August=8, September=9, October=10, November=11, December=12
 };
 
 class Date{
-private:
+protected: //metode si date protected
     int day;
     int month;
     int year;
-protected:
     Date(int _day, Month _month, int _year);
     Date(int _day, int _month, int _year);
     Date();
@@ -51,7 +33,51 @@ protected:
     void print_date();
     friend ostream& operator << (ostream &out, Date &d);
 };
-class Competition;
+
+class CompetitionInterface{
+protected:
+    virtual void print()=0;
+    virtual string typeOfCompetition()=0;
+    virtual ~CompetitionInterface()=default;
+};
+
+class Competition:public Date, public CompetitionInterface{ //mostenire
+private:
+    string name;
+    int numberOfCompetitors;
+    int id;
+public:
+    Competition();
+    Competition(string _name, int _numberOfCompetitors, int _id);
+    Competition(string _name, int _numberOfCompetitors, int _id, int _day, int _month, int _year);
+    ~Competition(){}
+    void init(string _name, int _numberOfCompetitors, int _id);
+    void init(string _name, int _numberOfCompetitors, int _id, int _day, int _month, int _year);
+    void setName(string newName);
+    void setNumberOfCompetitors(int n);
+    void setDifferentId(int n);
+    int getId();
+    string getName();
+    void print();
+    void printDetailed();
+    string typeOfCompetition();
+};
+
+class Tournament:public Date, public CompetitionInterface{ //turneu in fiecare an, stil bracket
+private:
+    string winner, locationCity, runnerUp;
+    int numberOfCompetitors;
+    vector<int> bracket; //va avea 2*numarul de participanti dimensiune, stocand tot bracket-ul in urma finalizarii
+    //fiecare participant indexat de la 0 la n-1 unde n nr de participanti
+    vector<string>competitors;
+public:
+    Tournament();
+    Tournament(int day, int month, int year, string _winner, string _locationCity, string _runnerUp, int _numberOfCompetitors, vector<int> _bracket, vector<string>_competitors);
+    ~Tournament()=default;
+    void print();
+    string typeOfCompetition();
+
+};
 
 class Result{
 private:
@@ -85,13 +111,13 @@ public:
 };
 
 class Person{
-protected:
-    String name, country;
+protected: //date membre protected
+    string name, country;
     int age;
-    Person(String name, String country, int age);
+    Person(string name, string country, int age);
     Person();
 public:
-    virtual ~Person(){}
+    virtual ~Person()=default;
     virtual void print()=0;
 };
 
@@ -106,13 +132,13 @@ protected:
     bool hasResultInEvent[17];
 
 public:
-    Competitor(String name, String country, int age);
+    Competitor(string name, string country, int age);
     Competitor();
     ~Competitor();
     void addResultData(Events event, double _times[], int length, int _rank, SingleRecordTypes recordSg=No_Single_Record, AverageRecordTypes recorAvg=No_Average_Record, int _comp_id=-1);
-    String getName();
+    string getName();
     void setAge(int newAge);
-    String eventNameFromEnum(int e);
+    string eventNameFromEnum(int e);
     void calculateRecords();
     int getNumberOfRecords();
     void findBestResults();
@@ -129,7 +155,7 @@ protected:
     string regions;
     vector<int>competitionsDelegated; //id-urile competitiilor la care a fost delegat
 public:
-    Delegat(String name, String country, int age, TypesOfDelegate type, string _regions);
+    Delegat(string name, string country, int age, TypesOfDelegate type, string _regions);
     Delegat();
     ~Delegat(){}
     void addCompetitionDelegated(int comp);
@@ -139,32 +165,13 @@ public:
 
 class DelegatCompetitor:public Delegat, public Competitor{
 public:
-    DelegatCompetitor(String name, String country, int age, TypesOfDelegate type, string _regions);
+    DelegatCompetitor(string name, string country, int age, TypesOfDelegate type, string _regions);
     DelegatCompetitor();
     ~DelegatCompetitor(){}
     void print();
 };
 
-class Competition:public Date{ //mostenire
-private:
-    String name;
-    int numberOfCompetitors;
-    int id;
-public:
-    Competition();
-    Competition(String _name, int _numberOfCompetitors, int _id);
-    Competition(String _name, int _numberOfCompetitors, int _id, int _day, int _month, int _year);
-    void init(String _name, int _numberOfCompetitors, int _id);
-    void init(String _name, int _numberOfCompetitors, int _id, int _day, int _month, int _year);
-    void setName(String newName);
-    void setNumberOfCompetitors(int n);
-    void setDifferentId(int n);
-    int getId();
-    String getName();
-    void print();
-    void printDetailed();
 
-};
 
 class VectorCompetitii:private vector<Competition*>{ //mostenire privata
 public:
