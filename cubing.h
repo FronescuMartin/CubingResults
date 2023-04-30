@@ -35,8 +35,8 @@ protected: //metode si date protected
 };
 
 class CompetitionInterface{
-protected:
-    virtual void print()=0;
+public:
+    virtual void printDetailed()=0;
     virtual string typeOfCompetition()=0;
     virtual ~CompetitionInterface()=default;
 };
@@ -46,11 +46,12 @@ private:
     string name;
     int numberOfCompetitors;
     int id;
+    static int static_id;
 public:
     Competition();
     Competition(string _name, int _numberOfCompetitors, int _id);
-    Competition(string _name, int _numberOfCompetitors, int _id, int _day, int _month, int _year);
-    ~Competition(){}
+    Competition(string _name, int _numberOfCompetitors, int _day, int _month, int _year);
+    ~Competition()=default;
     void init(string _name, int _numberOfCompetitors, int _id);
     void init(string _name, int _numberOfCompetitors, int _id, int _day, int _month, int _year);
     void setName(string newName);
@@ -61,20 +62,23 @@ public:
     void print();
     void printDetailed();
     string typeOfCompetition();
+    static int getStaticId();
 };
+
+int Competition::static_id=0;
 
 class Tournament:public Date, public CompetitionInterface{ //turneu in fiecare an, stil bracket
 private:
-    string winner, locationCity, runnerUp;
+    string winner, locationCountry, runnerUp;
     int numberOfCompetitors;
     vector<int> bracket; //va avea 2*numarul de participanti dimensiune, stocand tot bracket-ul in urma finalizarii
     //fiecare participant indexat de la 0 la n-1 unde n nr de participanti
     vector<string>competitors;
 public:
     Tournament();
-    Tournament(int day, int month, int year, string _winner, string _locationCity, string _runnerUp, int _numberOfCompetitors, vector<int> _bracket, vector<string>_competitors);
+    Tournament(int day, int month, int year, string _winner, string _locationCountry, string _runnerUp, int _numberOfCompetitors, vector<int> _bracket, vector<string>_competitors);
     ~Tournament()=default;
-    void print();
+    void printDetailed();
     string typeOfCompetition();
 
 };
@@ -173,13 +177,13 @@ public:
 
 
 
-class VectorCompetitii:private vector<Competition*>{ //mostenire privata
+class VectorCompetitii:private vector<CompetitionInterface*>{ //mostenire privata
 public:
-    using vector<Competition*>::operator[];
-    using vector<Competition*>::size;
-    using vector<Competition*>::back;
+    using vector<CompetitionInterface*>::operator[];
+    using vector<CompetitionInterface*>::size;
+    using vector<CompetitionInterface*>::back;
 
-    void add(Competition* c);
+    void add(CompetitionInterface* c);
     ~VectorCompetitii();
 };
 

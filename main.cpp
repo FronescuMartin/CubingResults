@@ -434,11 +434,12 @@ void Date::print_date(){
 }
 
 //###########COMPETITION############
-Competition::Competition(string _name, int _numberOfCompetitors, int _id, int _day, int _month, int _year):Date(_day, _month, _year){ //apeleaza constructorul din Date prin lista de initializare.
+Competition::Competition(string _name, int _numberOfCompetitors, int _day, int _month, int _year):Date(_day, _month, _year){ //apeleaza constructorul din Date prin lista de initializare.
     //constructor cu parametri
     this->name=_name;
     this->numberOfCompetitors=_numberOfCompetitors;
-    this->id=_id;
+    this->id=getStaticId();
+    this->static_id++;
 }
 Competition::Competition(){
     //constructor fara parametri, seteaza valorile implicite
@@ -481,6 +482,7 @@ void Competition::printDetailed(){
     cout<<"Numar concurenti: "<<numberOfCompetitors<<'\n';
     cout<<"Data: ";
     print_date(); //apeleaza metoda protected din Date.
+    cout<<"\n";
 }
 
 //setteri pentru datele membre private
@@ -499,9 +501,14 @@ string Competition::typeOfCompetition(){
     return "WCA Competition";
 }
 
+int Competition::getStaticId(){
+    return static_id;
+}
+
 //########### TOURNAMENT ##############
-Tournament::Tournament(int day, int month, int year, string _winner, string _locationCity, string _runnerUp, int _numberOfCompetitors, vector<int> _bracket, vector<string>_competitors):Date(day, month, year){
+Tournament::Tournament(int day, int month, int year, string _winner, string _locationCountry, string _runnerUp, int _numberOfCompetitors, vector<int> _bracket, vector<string>_competitors):Date(day, month, year){
     winner=_winner;
+    locationCountry=_locationCountry;
     runnerUp=_runnerUp;
     numberOfCompetitors=_numberOfCompetitors;
     bracket=_bracket;
@@ -512,15 +519,15 @@ Tournament::Tournament():Date(){
     runnerUp="";
     numberOfCompetitors=-1;
 }
-void Tournament::print(){
+void Tournament::printDetailed(){
     cout<<"Turneul Mondial din "<<year<<'\n';
     cout<<"Numar participanti: "<<numberOfCompetitors<<'\n';
     cout<<"Castigatorul turneului a fost "<<winner<<'\n';
-    cout<<"###############################\n\n";
+    cout<<"\n";
 }
 
 string Tournament::typeOfCompetition(){
-    return "Turneu Mondial";
+    return "Tournament";
 }
 
 //########### RESULT ############
@@ -618,8 +625,11 @@ AverageRecordTypes Result::getAverageRecord(){
 
 void Result::getCompetitionFromCompetitionId(){
     for(int i=0; i<compList.size(); i++){
-        if(compList[i]->getId()==this->competitionId){
-            this->competition=compList[i];
+        Competition* tempPtr=dynamic_cast<Competition*>(compList[i]);
+        if(tempPtr){
+            if(tempPtr->getId()==this->competitionId){
+                this->competition=tempPtr;
+            }
         }
     }
 }
@@ -664,9 +674,11 @@ int Result::getTimesLen(){
     return this->times_len;
 }
 
-void VectorCompetitii::add(Competition* c){
+void VectorCompetitii::add(CompetitionInterface* c){
     this->push_back(c);
 }
+
+
 VectorCompetitii::~VectorCompetitii(){
     for(int i=0; i<this->size(); i++){
         delete (*this)[i];
@@ -687,11 +699,11 @@ int main()
     double Feliks_OneHanded_1[5]={11.21, 7.69, 9.18, 8.64, 13.42};
     double Feliks_7x7_1[5]={118.18, 130.09, 113.62};
 
-    compList.add(new Competition("Canberra Autumn 2018", 108,0,21,4,2018));
-    compList.add(new Competition("Australian Nationals 2018", 199,1,6,10,2018));
-    compList.add(new Competition("Odd Day in Sydney 2019", 142,2,10,11,2019));
-    compList.add(new Competition("Turn Around Tassie 2020", 68,3,12,12,2020));
-    compList.add(new Competition("Brilliant Ballarat 2023", 140,4,25,2,2023));
+    compList.add(new Competition("Canberra Autumn 2018", 108,21,4,2018));
+    compList.add(new Competition("Australian Nationals 2018", 199,6,10,2018));
+    compList.add(new Competition("Odd Day in Sydney 2019", 142,10,11,2019));
+    compList.add(new Competition("Turn Around Tassie 2020", 68,12,12,2020));
+    compList.add(new Competition("Brilliant Ballarat 2023", 140,25,2,2023));
 
 
 
@@ -714,9 +726,9 @@ int main()
     //Max Park
     Competitor *c2=new Competitor("Max Park", "USA", 21);
 
-    compList.add(new Competition("Circle City Summer 2022",77,5,6,8,2022));
-    compList.add(new Competition("Arizona Speedcubing Spring 2023", 110,6,19,3,2023));
-    compList.add(new Competition("Bay Area Speedcubin' 29 PM 2022", 117,7,3,4,2022));
+    compList.add(new Competition("Circle City Summer 2022",77,6,8,2022));
+    compList.add(new Competition("Arizona Speedcubing Spring 2023", 110,19,3,2023));
+    compList.add(new Competition("Bay Area Speedcubin' 29 PM 2022", 117,3,4,2022));
 
 
     double Max_3x3_1[5]={3.63, 5.52, 5.66, 5.37, 5.22};
@@ -736,7 +748,7 @@ int main()
     //Sarah Strong
     DelegatCompetitor* dc1=new DelegatCompetitor("Sarah Strong", "Canada", 27, Delegate, "Canada");
 
-    compList.add(new Competition("Markham 3x3x3 Morning 2023", 115, 8, 29, 4, 2023));
+    compList.add(new Competition("Markham 3x3x3 Morning 2023", 115, 29, 4, 2023));
     double Sarah_3x3_1[5]={12.49, 15.14, 13.67, 11.42, 11.46};
     dc1->addResultData(_3x3, Sarah_3x3_1,5, 22, No_Single_Record, No_Average_Record, 8);
 
@@ -751,6 +763,24 @@ int main()
         // elementele pot fi de tipul clasei derivate
     }
 
+    CompetitionInterface *t1=new Tournament(2,1,2013, "Feliks Zemdegs", "USA", "Mats Valk", 4, {0,1,2,3,1,2,2}, {"Rowe Hessler", "Mats Valk", "Feliks Zemdegs", "Sebastian Weyer"}); //upcasting
+    CompetitionInterface *t2=new Tournament(5,7,2017, "Feliks Zemdegs", "USA", "Max Park", 4, {0,1,2,3,0,2,0}, {"Feliks Zemdegs", "Mats Valk", "Max Park", "Philipp Weyer"}); //upcasting
+    compList.add(t1);
+    compList.add(t2);
+
+    cout<<"Lista de competitii si turnee:\n";
+    for(int i=0; i<compList.size(); i++){
+        compList[i]->printDetailed(); //polimorfism la executie
+    }
+    int numberOfWcaCompetitions=0, numberOfTournaments=0;
+    for(int i=0; i<compList.size(); i++){
+        if(compList[i]->typeOfCompetition()=="WCA Competition"){ //polimorfism la executie
+            numberOfWcaCompetitions++;
+        } else if (compList[i]->typeOfCompetition()=="Tournament"){ //polimorfism la executie
+            numberOfTournaments++;
+        }
+    }
+    cout<<"Numarul de competitii WCA este "<<numberOfWcaCompetitions<<" iar numarul de turnee este "<<numberOfTournaments<<'\n';
     //################# MENIUL INTERACTIV ##################
     int userInput=1;
     cout<<"\nMeniu\n";
@@ -847,9 +877,12 @@ int main()
                     }
                     cout<<"La care din aceste competitii a fost obtinut rezultatul? Daca competitia nu apare pe lista, trebuie mai intai adaugata.\n";
                     for(int i=0; i<compList.size(); i++){
-                        cout<<compList[i]->getId()<<". ";
-                        compList[i]->print();
-                        cout<<'\n';
+                        Competition* tempPtr=dynamic_cast<Competition*>(compList[i]);
+                        if(tempPtr){
+                            cout<<tempPtr->getId()<<". ";
+                            tempPtr->print();
+                            cout<<'\n';
+                        }
                     }
                     int compId;
                     cin>>compId;
@@ -947,9 +980,12 @@ int main()
                 }
                 cout<<"La care din aceste competitii a fost obtinut rezultatul? Daca competitia nu apare pe lista, trebuie mai intai adaugata.\n";
                 for(int i=0; i<compList.size(); i++){
-                    cout<<compList[i]->getId()<<". ";
-                    compList[i]->print();
-                    cout<<'\n';
+                    Competition* tempPtr=dynamic_cast<Competition*>(compList[i]);
+                    if(tempPtr){
+                        cout<<tempPtr->getId()<<". ";
+                        tempPtr->print();
+                        cout<<'\n';
+                    }
                 }
                 int compId;
                 cin>>compId;
@@ -974,49 +1010,56 @@ int main()
                 cout<<"Cati competitori au participat? ";
                 int nrCompetitori;
                 cin>>nrCompetitori;
-                int id=compList[compList.size()-1]->getId()+1;
+                int tempLen=compList.size()-1;
+                /*while(compList[tempLen]->typeOfCompetition()!="WCA Competition"){
+                    tempLen--;
+                } //cautam competitia de tip wca competition cu id-ul cel mai mare, pentru a genera urmatorul id
+                int id=dynamic_cast<Competition*>(compList[tempLen])->getId()+1;*/
                 cout<<"Introduceti data competitiei, ziua luna an (numere cu spatiu intre ele) ";
                 int zi, luna, an;
                 cin>>zi>>luna>>an;
-                compList.add(new Competition(compNameStr,nrCompetitori,id, zi, luna, an));
+                compList.add(new Competition(compNameStr,nrCompetitori, zi, luna, an));
                 cout<<"Apasati 2 pentru a afisa aceasta competitie\n3 pentru a modifica numele\n4 pentru a modifica numarul de concurenti\n5 pentru a seta un alt id\n";
                 cin>>userInput;
                 if(userInput==2){
-                    compList[compList.size()-1]->printDetailed();
+                    dynamic_cast<Competition*>(compList[compList.size()-1])->printDetailed();
                 } else if(userInput==3){
                     cout<<"Introduceti numele nou ";
                     cin.get();
                     cin.getline(compName,50);
                     string compNameStr2(compName);
-                    compList[compList.size()-1]->setName(compNameStr2);
+                    dynamic_cast<Competition*>(compList[compList.size()-1])->setName(compNameStr2);
                     cout<<"Apasati 2 pentru a afisa competitia ";
                     cin>>userInput;
                     if(userInput==2){
-                        compList[compList.size()-1]->printDetailed();
+                        dynamic_cast<Competition*>(compList[compList.size()-1])->printDetailed();
                     }
                 } else if(userInput==4){
                     cout<<"Introduceti numarul de concurenti ";
                     cin>>userInput;
-                    compList.back()->setNumberOfCompetitors(userInput);
+                    dynamic_cast<Competition*>(compList.back())->setNumberOfCompetitors(userInput);
                     cout<<"Apasati 2 pentru a afisa competitia ";
                     cin>>userInput;
                     if(userInput==2){
-                        compList.back()->printDetailed();
+                        dynamic_cast<Competition*>(compList.back())->printDetailed();
                     }
                 } else if(userInput==5){
                     cout<<"Atentie, id-ul trebuie sa fie diferit fata de cele deja existente in baza de date:\n";
                     for(int i=0; i<compList.size(); i++){
-                        cout<<compList[i]->getId()<<". ";
-                        compList[i]->print();
-                        cout<<'\n';
+                        Competition* tempPtr=dynamic_cast<Competition*>(compList[i]);
+                        if(tempPtr){
+                            cout<<tempPtr->getId()<<". ";
+                            tempPtr->print();
+                            cout<<'\n';
+                        }
                     }
                     cout<<"Introduceti noul id ";
                     cin>>userInput;
-                    compList.back()->setDifferentId(userInput);
+                    dynamic_cast<Competition*>(compList.back())->setDifferentId(userInput);
                     cout<<"Apasati 2 pentru a afisa competitia ";
                     cin>>userInput;
                     if(userInput==2){
-                        compList.back()->printDetailed();
+                        dynamic_cast<Competition*>(compList.back())->printDetailed();
                     }
                 }
             }
