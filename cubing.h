@@ -123,6 +123,7 @@ protected: //date membre protected
 public:
     virtual ~Person()=default;
     virtual void print()=0;
+    virtual string typeOfPerson()=0;
 };
 
 class Competitor:virtual public Person{ //parte din mostenire in diamant
@@ -134,7 +135,6 @@ protected:
     Result* bestResultsAverage[17];
     double averageResult[17];
     bool hasResultInEvent[17];
-
 public:
     Competitor(string name, string country, int age);
     Competitor();
@@ -150,7 +150,7 @@ public:
     void print();
     Result* getResults();
     int getResultsLen();
-
+    string typeOfPerson();
 };
 
 class Delegat:virtual public Person{ //parte din mostenire in diamant
@@ -165,14 +165,19 @@ public:
     void addCompetitionDelegated(int comp);
     void addCompetitionsDelegated(vector<int> comps);
     void print();
+    string typeOfPerson();
 };
 
 class DelegatCompetitor:public Delegat, public Competitor{
-public:
+private:
     DelegatCompetitor(string name, string country, int age, TypesOfDelegate type, string _regions);
     DelegatCompetitor();
+public:
+    static DelegatCompetitor* createInstance(string name, string country, int age, TypesOfDelegate type, string _regions); //metoda statica pentru a crea obiectul
+    static DelegatCompetitor* createInstance();
     ~DelegatCompetitor(){}
     void print();
+    string typeOfPerson();
 };
 
 
@@ -185,6 +190,17 @@ public:
 
     void add(CompetitionInterface* c);
     ~VectorCompetitii();
+};
+
+
+//EXCEPTII
+
+class bad_input:public exception{
+private:
+    string message;
+public:
+    bad_input(string _message);
+    const char* what() const throw();
 };
 
 #endif // CUBING_H_INCLUDED
