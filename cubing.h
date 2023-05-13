@@ -23,18 +23,19 @@ enum Month{
 
 class Date{
 protected: //metode si date protected
-    int day;
-    int month;
-    int year;
-    Date(int _day, Month _month, int _year);
-    Date(int _day, int _month, int _year);
+    const int day;
+    const int month;
+    const int year;
+    Date(const int _day, const Month _month, const int _year);
+    Date(const int _day, const int _month, const int _year);
     Date();
-    void init_date(int _day, int _month, int _year);
+    void init_date(const int _day, const int _month, const int _year);
     void print_date();
-    friend ostream& operator << (ostream &out, Date &d);
+    friend ostream& operator << ( ostream &out, const Date &d);
 };
 
-class CompetitionInterface{
+//design pattern abstract factory
+class CompetitionInterface{ //interfata
 public:
     virtual void printDetailed()=0;
     virtual string typeOfCompetition()=0;
@@ -49,20 +50,20 @@ private:
     static int static_id;
 public:
     Competition();
-    Competition(string _name, int _numberOfCompetitors, int _id);
-    Competition(string _name, int _numberOfCompetitors, int _day, int _month, int _year);
+    Competition(const string _name, const int _numberOfCompetitors, const int _id);
+    Competition(const string _name, const int _numberOfCompetitors, const int _day, const int _month, const int _year);
     ~Competition()=default;
-    void init(string _name, int _numberOfCompetitors, int _id);
-    void init(string _name, int _numberOfCompetitors, int _id, int _day, int _month, int _year);
-    void setName(string newName);
-    void setNumberOfCompetitors(int n);
-    void setDifferentId(int n);
+    void init(const string _name, const int _numberOfCompetitors, const int _id);
+    void init(const string _name, const int _numberOfCompetitors, const int _id, const int _day, const int _month, const int _year);
+    void setName(const string newName);
+    void setNumberOfCompetitors(const int n);
+    void setDifferentId(const int n);
     int getId();
     string getName();
     void print();
     void printDetailed();
     string typeOfCompetition();
-    static int getStaticId();
+    static int getStaticId(); //metoda statica, returneaza data statica
 };
 
 int Competition::static_id=0;
@@ -76,7 +77,7 @@ private:
     vector<string>competitors;
 public:
     Tournament();
-    Tournament(int day, int month, int year, string _winner, string _locationCountry, string _runnerUp, int _numberOfCompetitors, vector<int> _bracket, vector<string>_competitors);
+    Tournament(const int day, const int month, const int year, const string _winner, const string _locationCountry, const string _runnerUp, const int _numberOfCompetitors, const vector<int> _bracket, const vector<string>_competitors);
     ~Tournament()=default;
     void printDetailed();
     string typeOfCompetition();
@@ -93,14 +94,14 @@ private:
 
     SingleRecordTypes singleRecord;
     AverageRecordTypes averageRecord;
-    Competition* competition;
+    shared_ptr<Competition> competition;
     int competitionId;
     int rankInRound;
 public:
     Result();
-    Result(const Result &r);
+    Result(reference_wrapper<const Result> r);
     Result operator=(const Result& r);
-    Result(Events event, double _times[], int length, int _rank, SingleRecordTypes recordSg=No_Single_Record, AverageRecordTypes recorAvg=No_Average_Record, int _comp_id=-1);
+    Result(const Events event, const double _times[], const int length, const int _rank, const SingleRecordTypes recordSg=No_Single_Record, const AverageRecordTypes recorAvg=No_Average_Record, const int _comp_id=-1);
     void print();
     void calculateAverageAndSingle();
     double getAverage();
@@ -109,20 +110,21 @@ public:
     SingleRecordTypes getSingleRecord();
     AverageRecordTypes getAverageRecord();
     Events getEvent();
-    double roundTo2DecimalPlaces(double num);
+    double roundTo2DecimalPlaces(const double num);
     double* getTimes();
     int getTimesLen();
 };
 
-class Person{
+//design pattern abstract factory
+class Person{ //clasa abstracta
 protected: //date membre protected
     string name, country;
     int age;
-    Person(string name, string country, int age);
+    Person(const string name, const string country, const int age);
     Person();
 public:
     virtual ~Person()=default;
-    virtual void print()=0;
+    virtual void printDetailed()=0;
     virtual string typeOfPerson()=0;
 };
 
@@ -136,18 +138,18 @@ protected:
     double averageResult[17];
     bool hasResultInEvent[17];
 public:
-    Competitor(string name, string country, int age);
+    Competitor(const string name, const string country, const int age);
     Competitor();
     ~Competitor();
-    void addResultData(Events event, double _times[], int length, int _rank, SingleRecordTypes recordSg=No_Single_Record, AverageRecordTypes recorAvg=No_Average_Record, int _comp_id=-1);
+    void addResultData(const Events event, const double _times[], const int length, const int _rank, const SingleRecordTypes recordSg=No_Single_Record, const AverageRecordTypes recorAvg=No_Average_Record, const int _comp_id=-1);
     string getName();
-    void setAge(int newAge);
+    void setAge(const int newAge);
     string eventNameFromEnum(int e);
     void calculateRecords();
     int getNumberOfRecords();
     void findBestResults();
     void calculateAverageResult();
-    void print();
+    void printDetailed();
     Result* getResults();
     int getResultsLen();
     string typeOfPerson();
@@ -159,37 +161,36 @@ protected:
     string regions;
     vector<int>competitionsDelegated; //id-urile competitiilor la care a fost delegat
 public:
-    Delegat(string name, string country, int age, TypesOfDelegate type, string _regions);
+    Delegat(const string name, const string country, const int age, const TypesOfDelegate type, const string _regions);
     Delegat();
     ~Delegat(){}
-    void addCompetitionDelegated(int comp);
-    void addCompetitionsDelegated(vector<int> comps);
-    void print();
+    void addCompetitionDelegated(const int comp);
+    void addCompetitionsDelegated(const vector<int> comps);
+    void printDetailed();
     string typeOfPerson();
 };
 
+//design pattern static factory method
 class DelegatCompetitor:public Delegat, public Competitor{
 private:
-    DelegatCompetitor(string name, string country, int age, TypesOfDelegate type, string _regions);
+    DelegatCompetitor(const string name, const string country, const int age, const TypesOfDelegate type, const string _regions);
     DelegatCompetitor();
 public:
-    static DelegatCompetitor* createInstance(string name, string country, int age, TypesOfDelegate type, string _regions); //metoda statica pentru a crea obiectul
+    static DelegatCompetitor* createInstance(const string name, const string country, const int age, const TypesOfDelegate type, const string _regions); //metoda statica pentru a crea obiectul
     static DelegatCompetitor* createInstance();
     ~DelegatCompetitor(){}
-    void print();
+    void printDetailed();
     string typeOfPerson();
 };
 
 
-
-class VectorCompetitii:private vector<CompetitionInterface*>{ //mostenire privata
+template<typename T>
+class VectorObiecte:private vector<T>{ //mostenire privata
 public:
-    using vector<CompetitionInterface*>::operator[];
-    using vector<CompetitionInterface*>::size;
-    using vector<CompetitionInterface*>::back;
-
-    void add(CompetitionInterface* c);
-    ~VectorCompetitii();
+    using vector<T>::operator[];
+    using vector<T>::size;
+    using vector<T>::back;
+    void add(const T c);
 };
 
 
@@ -199,8 +200,20 @@ class bad_input:public exception{
 private:
     string message;
 public:
-    bad_input(string _message);
+    bad_input(const string _message);
     const char* what() const throw();
+};
+
+//singleton design pattern
+class Menu{
+private:
+    Menu();
+public:
+    static Menu& getInstance() {
+        static Menu instance;
+        return instance;
+    }
+    void afisare();
 };
 
 #endif // CUBING_H_INCLUDED
