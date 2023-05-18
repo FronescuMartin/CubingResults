@@ -78,7 +78,7 @@ Competitor::~Competitor(){ //destructor
         delete[] results;
     }
 }
-string Competitor::getName(){
+string Competitor::getName()const{
     return this->name;
 }
 void Competitor::setAge(const int newAge){
@@ -117,11 +117,11 @@ void Competitor::calculateRecords(){
     }
 
 }
-int Competitor::getNumberOfRecords(){
+int Competitor::getNumberOfRecords()const{
     return numberOfNRs+numberOfCRs+numberOfWRs;
 }
 
-string Competitor::eventNameFromEnum(const int e){ //functia primeste un enum de fapt, dar valoarea e transmisa ca intreg
+string Competitor::eventNameFromEnum(const int e)const{ //functia primeste un enum de fapt, dar valoarea e transmisa ca intreg
     if(e==0) return "2x2";
     if(e==1) return "3x3";
     if(e==2) return "4x4";
@@ -266,10 +266,10 @@ void Competitor::calculateAverageResult(){ //calculeaza rezultatul mediu al conc
 }
 
 //getteri deoarece datele membre sunt private
-Result* Competitor::getResults(){
+Result* Competitor::getResults()const{
     return results;
 }
-int Competitor::getResultsLen(){
+int Competitor::getResultsLen()const{
     return results_len;
 }
 
@@ -460,7 +460,7 @@ ostream& operator << (ostream &out, const Date &d){ //operatorul << supraincarca
     return out;
 }
 
-void Date::print_date(){
+void Date::print_date()const{
     if(day<10){
         cout<<'0'; //pentru formatare
     }
@@ -504,14 +504,14 @@ Competition::Competition(){
 }*/
 
 //getteri pentru datele membre private
-int Competition::getId(){
+int Competition::getId()const{
     return this->id;
 }
-string Competition::getName(){
+string Competition::getName()const{
     return this->name;
 }
 
-void Competition::print(){
+void Competition::print()const{
     //printul acesta e apelat in cadrul unui rezultat, pentru a mentiona la ce competitie este obtinut
     cout<<this->name;
 }
@@ -670,15 +670,15 @@ void Result::print(){
     string tmp=competition->getName();
     cout<<tmp<<'\n'; //polimorfism deoarece ofstream mosteneste ostream care mosteneste ios etc?
 }
-double Result::roundTo2DecimalPlaces(const double num){
+double Result::roundTo2DecimalPlaces(const double num)const{
     return round(num * 100) / 100.0;
     //aproximeaza rezultatele la 2 zecimale, folosit pentru calcularea mediei
 }
 
-SingleRecordTypes Result::getSingleRecord(){
+SingleRecordTypes Result::getSingleRecord()const{
     return singleRecord;
 }
-AverageRecordTypes Result::getAverageRecord(){
+AverageRecordTypes Result::getAverageRecord()const{
     return averageRecord;
 }
 
@@ -716,14 +716,14 @@ void Result::calculateAverageAndSingle(){
 }
 
 //getteri pentru datele membru
-double Result::getAverage(){
+double Result::getAverage()const{
     return this->average;
 }
 
-double Result::getSingle(){
+double Result::getSingle()const{
     return this->single;
 }
-Events Result::getEvent(){
+Events Result::getEvent()const{
     return this->event;
 }
 
@@ -731,7 +731,7 @@ double* Result::getTimes(){
     return this->times;
 }
 
-int Result::getTimesLen(){
+int Result::getTimesLen()const{
     return this->times_len;
 }
 
@@ -767,7 +767,12 @@ void print_list(vector<int> v){
 
 Menu::Menu(){}
 
-void Menu::afisare(){
+Menu& Menu::getInstance() {
+    static Menu instance;
+    return instance;
+}
+
+void Menu::afisare()const{
     VectorObiecte<shared_ptr<Person>> people;
     compList.add(make_shared<Competition>("Markham 3x3x3 Morning 2023", 115, 29, 4, 2023));
     compList.add(make_shared<Competition>("Canberra Autumn 2018", 108,21,4,2018));
@@ -1187,26 +1192,20 @@ void Menu::afisare(){
             //afiseaza toate persoanele
             cout<<"Lista de persoane:\n";
             print_list(ref(people));
-            /*for(int i=0; i<people.size(); i++){
-                people[i]->printDetailed(); //polimorfism la executie (people[i] este de tip Person*,
-            // elementele pot fi de tipul clasei derivate
-            }*/
         } else if (userInput==3){
             //afiseaza toate competitiile, de orice tip
             cout<<"Lista de competitii si turnee:\n";
             print_list(ref(compList));
-            /*for(int i=0; i<compList.size(); i++){
-                compList[i]->printDetailed(); //polimorfism la executie
-            }*/
         }
     }
-    //dezalocare persoane
-    //nu mai e nevoie deoarece acum people este de tip VectorObiecte care are destructor
-    /*for(int i=0; i<people.size(); i++){
-        delete people[i]; //se apeleaza destructorul virtual (people[i] poate fi fie *Competitor,
-        //fie *Delegat, fie *DelegatComepetitor, toate acestea fiind clase derivate,
-        //dar person[i] continand pointer de tip *Person.
-    }*/
+}
+
+void testSpecializare(){
+    vector<int>test;
+    test.push_back(12);
+    test.push_back(23);
+    test.push_back(14);
+    print_list(test);
 }
 
 int main()
@@ -1214,6 +1213,6 @@ int main()
     Menu menu=Menu::getInstance();
     menu.afisare();
     Menu menu2=Menu::getInstance();
-
+    //testSpecializare();
     return 0;
 }

@@ -30,7 +30,7 @@ protected: //metode si date protected
     Date(const int _day, const int _month, const int _year);
     Date();
     void init_date(const int _day, const int _month, const int _year);
-    void print_date();
+    void print_date() const;
     friend ostream& operator << ( ostream &out, const Date &d);
 };
 
@@ -58,9 +58,9 @@ public:
     void setName(const string newName);
     void setNumberOfCompetitors(const int n);
     void setDifferentId(const int n);
-    int getId();
-    string getName();
-    void print();
+    int getId()const;
+    string getName()const;
+    void print()const;
     void printDetailed();
     string typeOfCompetition();
     static int getStaticId(); //metoda statica, returneaza data statica
@@ -104,15 +104,15 @@ public:
     Result(const Events event, const double _times[], const int length, const int _rank, const SingleRecordTypes recordSg=No_Single_Record, const AverageRecordTypes recorAvg=No_Average_Record, const int _comp_id=-1);
     void print();
     void calculateAverageAndSingle();
-    double getAverage();
-    double getSingle();
+    double getAverage()const;
+    double getSingle()const;
     void getCompetitionFromCompetitionId();
-    SingleRecordTypes getSingleRecord();
-    AverageRecordTypes getAverageRecord();
-    Events getEvent();
-    double roundTo2DecimalPlaces(const double num);
+    SingleRecordTypes getSingleRecord()const;
+    AverageRecordTypes getAverageRecord()const;
+    Events getEvent()const;
+    double roundTo2DecimalPlaces(const double num)const;
     double* getTimes();
-    int getTimesLen();
+    int getTimesLen()const;
 };
 
 //design pattern abstract factory
@@ -142,16 +142,16 @@ public:
     Competitor();
     ~Competitor();
     void addResultData(const Events event, const double _times[], const int length, const int _rank, const SingleRecordTypes recordSg=No_Single_Record, const AverageRecordTypes recorAvg=No_Average_Record, const int _comp_id=-1);
-    string getName();
+    string getName()const;
     void setAge(const int newAge);
-    string eventNameFromEnum(int e);
+    string eventNameFromEnum(int e)const;
     void calculateRecords();
-    int getNumberOfRecords();
+    int getNumberOfRecords()const;
     void findBestResults();
     void calculateAverageResult();
     void printDetailed();
-    Result* getResults();
-    int getResultsLen();
+    Result* getResults()const;
+    int getResultsLen()const;
     string typeOfPerson();
 };
 
@@ -209,11 +209,8 @@ class Menu{
 private:
     Menu();
 public:
-    static Menu& getInstance() {
-        static Menu instance;
-        return instance;
-    }
-    void afisare();
+    static Menu& getInstance();
+    void afisare()const;
 };
 
 #endif // CUBING_H_INCLUDED
